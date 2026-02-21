@@ -5,7 +5,7 @@ import CategorySection from "./components/CategorySection";
 import Footer from "./components/Footer";
 import type { Product } from "./components/CategorySection";
 import Header from "./components/NavBar";
-import ProductModal from "./components/ProductModal";
+import ProductModal from "./components/Productmodal";
 import CartDrawer from "./components/CartDrawer";
 import type { CartItem } from "./components/CartDrawer";
 

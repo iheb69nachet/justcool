@@ -1,33 +1,65 @@
 import React, { useRef, useEffect } from "react";
 
-type Category = {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type Category = {
   id: string;
   label: string;
-  emoji: string;
+  emoji?: string; // optional — auto-assigned from label if omitted
 };
 
-export const CATEGORIES: Category[] = [
-  { id: "naans",        label: "Naans",        emoji: "🌯" },
-  { id: "naan_burgers", label: "Naan Burgers",  emoji: "🥪" },
-  { id: "burgers",      label: "Burgers",       emoji: "🍔" },
-  { id: "assiettes",    label: "Assiettes",     emoji: "🍽️" },
-  { id: "tacos",        label: "Tacos",         emoji: "🌮" },
-  { id: "snacks",       label: "Tex-Mex",       emoji: "🍗" },
-  { id: "desserts",     label: "Desserts",      emoji: "🍰" },
-  { id: "boissons",     label: "Boissons",      emoji: "🥤" },
-  { id: "plus",         label: "Plus",          emoji: "➕" },
+// ─── Emoji auto-assignment ────────────────────────────────────────────────────
+// Maps lowercase keywords found in the category label to an emoji.
+// The first matching keyword wins; falls back to "🍽️".
+
+const EMOJI_MAP: [string, string][] = [
+  ["naan burger",  "🥪"],
+  ["naan",         "🌯"],
+  ["burger",       "🍔"],
+  ["assiette",     "🍽️"],
+  ["tacos",        "🌮"],
+  ["tex",          "🍗"],
+  ["snack",        "🍗"],
+  ["dessert",      "🍰"],
+  ["boisson",      "🥤"],
+  ["drink",        "🥤"],
+  ["pizza",        "🍕"],
+  ["wrap",         "🌯"],
+  ["salade",       "🥗"],
+  ["sandwich",     "🥙"],
+  ["frite",        "🍟"],
+  ["formule",      "🍱"],
+  ["menu",         "🍱"],
+  ["plus",         "➕"],
+  ["extra",        "➕"],
 ];
 
+function resolveEmoji(label: string): string {
+  const lower = label.toLowerCase();
+  for (const [keyword, emoji] of EMOJI_MAP) {
+    if (lower.includes(keyword)) return emoji;
+  }
+  return "🍽️";
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 interface CategoryNavProps {
+  /** The currently active category id */
   activeId: string;
+  /** Distance from the top of the viewport the sticky bar should sit below */
   topOffset?: string;
+  /** Called when the user clicks a category pill */
   onSelect: (id: string) => void;
+  /** Dynamic list of categories — driven by the API, no default */
+  categories: Category[];
 }
 
 export default function CategoryNav({
   activeId,
   topOffset = "3.75rem",
   onSelect,
+  categories,
 }: CategoryNavProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const tabRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
@@ -67,7 +99,6 @@ export default function CategoryNav({
           border: 1px solid;
           cursor: pointer;
           outline: none;
-          /* smooth pill transition */
           transition:
             background 0.25s ease,
             color 0.25s ease,
@@ -116,8 +147,9 @@ export default function CategoryNav({
           role="tablist"
           className="no-scrollbar flex items-center gap-2 px-4 py-3 overflow-x-auto list-none m-0"
         >
-          {CATEGORIES.map((cat, i) => {
+          {categories.map((cat, i) => {
             const isActive = cat.id === activeId;
+            const emoji = cat.emoji ?? resolveEmoji(cat.label);
             return (
               <li key={cat.id} role="presentation">
                 <a
@@ -134,7 +166,7 @@ export default function CategoryNav({
                   className={`cat-tab ${isActive ? "cat-tab-active" : "cat-tab-inactive"}`}
                   onClick={(e) => handleClick(e, cat.id)}
                 >
-                  <span aria-hidden="true">{cat.emoji}</span>
+                  <span aria-hidden="true">{emoji}</span>
                   {cat.label}
                 </a>
               </li>

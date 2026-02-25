@@ -1,28 +1,29 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import type { Product } from "./CategorySection";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── API types ────────────────────────────────────────────────────────────────
 
-interface Sauce {
+interface ApiSupplement {
   id: string;
-  label: string;
-  imageSrc: string;
-  isSpicy?: boolean;
-}
-
-interface Supplement {
-  id: string;
-  label: string;
+  name: string;
   price: number;
-  imageSrc: string;
+  is_active: boolean;
+  sort_order: number;
+  image_url: string | null;
 }
 
-interface ProductModalProps {
-  product: Product | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onAddToCart: (product: Product, quantity: number, options: OrderOptions) => void;
+interface ApiSupplementGroup {
+  id: string;
+  name: string;
+  description: string;
+  is_required: boolean;
+  min_selection: number;
+  max_selection: number;
+  sort_order: number;
+  supplements: ApiSupplement[];
 }
+
+// ─── Public types ─────────────────────────────────────────────────────────────
 
 interface OrderOptions {
   crudites: string[];
@@ -31,43 +32,15 @@ interface OrderOptions {
   menuFormule: boolean;
   isStudent: boolean;
   supplements: string[];
+  groupSelections: Record<string, string[]>;
 }
 
-// ─── Static data ──────────────────────────────────────────────────────────────
-
-const CRUDITES = ["Salade", "Tomate", "Oignon"];
-
-const BREADS = ["Pain Naan", "Pain Galette", "Pain Turc"];
-
-const SAUCES: Sauce[] = [
-  { id: "blanche",    label: "Blanche",    imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-blanche.webp" },
-  { id: "mayo",       label: "Mayonnaise", imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-mayonnaise.webp" },
-  { id: "biggy",      label: "Biggy",      imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-biggy.webp" },
-  { id: "andalouse",  label: "Andalouse",  imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-andalouse.webp" },
-  { id: "ketchup",    label: "Ketchup",    imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-ketchup.webp" },
-  { id: "curry",      label: "Curry",      imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-curry.webp" },
-  { id: "bbq",        label: "Barbecue",   imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-barbecue.webp" },
-  { id: "samourai",   label: "Samouraï",   imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-samourai.webp",  isSpicy: true },
-  { id: "algerienne", label: "Algérienne", imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-algerienne.webp", isSpicy: true },
-  { id: "harissa",    label: "Harissa",    imageSrc: "https://justcool.fr/assets/images/products/sauces/sauce-harissa.webp",    isSpicy: true },
-];
-
-const SUPPLEMENTS: Supplement[] = [
-  { id: "bacon",        label: "Bacon",           price: 1.50, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-bacon.webp" },
-  { id: "lardons",      label: "Lardons",         price: 1.50, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-lardons.webp" },
-  { id: "chevre",       label: "Chèvre",          price: 1.50, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-chevre.webp" },
-  { id: "raclette",     label: "Raclette",        price: 1.50, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-raclette.webp" },
-  { id: "cheddar",      label: "Cheddar",         price: 1.50, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-cheddar.webp" },
-  { id: "pomdeterre",   label: "Pomme de terre",  price: 1.50, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-pomme-de-terre.webp" },
-  { id: "oeuf",         label: "Œuf",             price: 1.00, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-oeuf.webp" },
-  { id: "kiri",         label: "Kiri",            price: 1.00, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-kiri.webp" },
-  { id: "boursin",      label: "Boursin",         price: 1.00, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-boursin.webp" },
-  { id: "fromagere",    label: "Sauce Fromagère", price: 0.50, imageSrc: "https://justcool.fr/assets/images/products/supplements/supplement-sauce-fromagere.webp" },
-];
-
-const MENU_UPCHARGE = 2.00;
-const STUDENT_DISCOUNT = 1.00;
-const MAX_SAUCES = 2;
+interface ProductModalProps {
+  product: Product | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onAddToCart: (product: Product, quantity: number, options: OrderOptions) => void;
+}
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
@@ -93,40 +66,40 @@ const CheckIcon = () => (
   </svg>
 );
 
+const AlertIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+    className="shrink-0">
+    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+);
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function Separator() {
   return <div className="h-px w-full bg-white/10" />;
 }
 
-function SectionLegend({ children }: { children: React.ReactNode }) {
+function ErrorBanner({ message }: { message: string }) {
   return (
-    <div className="flex items-center gap-2 mb-4">
-      <span className="font-bold uppercase tracking-widest text-sm text-white">{children}</span>
-      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-normal uppercase tracking-wider
-        border border-red-500/50 bg-red-500/20 text-red-500 h-5">
-        Obligatoire
-      </span>
+    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/15 border border-red-500/40 text-red-400 text-xs font-bold animate-[shake_0.35s_ease]">
+      <AlertIcon />
+      {message}
     </div>
   );
 }
 
 function OptionChip({
-  label,
-  selected,
-  onClick,
-  disabled,
+  label, selected, onClick, disabled,
 }: {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-  disabled?: boolean;
+  label: string; selected: boolean; onClick: () => void; disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled && !selected}
       className={`h-8 px-3 rounded-full text-xs font-bold transition-all border
         ${selected
           ? "bg-gradient-to-r from-red-600 to-red-700 border-red-600 text-white shadow-[0_0_15px_rgba(204,30,39,0.3)]"
@@ -140,21 +113,10 @@ function OptionChip({
 }
 
 function ImageOption({
-  label,
-  imageSrc,
-  selected,
-  onClick,
-  disabled,
-  price,
-  isSpicy,
+  label, imageSrc, selected, onClick, disabled, price,
 }: {
-  label: string;
-  imageSrc: string;
-  selected: boolean;
-  onClick: () => void;
-  disabled?: boolean;
-  price?: number;
-  isSpicy?: boolean;
+  label: string; imageSrc: string; selected: boolean; onClick: () => void;
+  disabled?: boolean; price?: number;
 }) {
   return (
     <button
@@ -168,28 +130,16 @@ function ImageOption({
         }
         disabled:opacity-40 disabled:cursor-not-allowed`}
     >
-      {/* Image circle */}
       <div className="w-[60px] h-[60px] shrink-0 rounded-full overflow-hidden bg-black/20 relative">
-        <img
-          alt={label}
-          loading="lazy"
-          src={imageSrc}
-          className="absolute inset-0 w-full h-full object-contain p-2"
-        />
+        <img alt={label} loading="lazy" src={imageSrc}
+          className="absolute inset-0 w-full h-full object-contain p-2" />
       </div>
-
-      {/* Label + price */}
       <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
-        <div className="flex items-center gap-1">
-          <span className="text-xs text-white leading-tight truncate">{label}</span>
-          {isSpicy && <FlameIcon />}
-        </div>
-        {price !== undefined && (
+        <span className="text-xs text-white leading-tight truncate">{label}</span>
+        {price !== undefined && price > 0 && (
           <span className="text-white/50 text-xs font-bold">+{price.toFixed(2)}€</span>
         )}
       </div>
-
-      {/* Check indicator */}
       {selected && (
         <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
           <CheckIcon />
@@ -199,36 +149,177 @@ function ImageOption({
   );
 }
 
+// ─── Spicy-name detection ─────────────────────────────────────────────────────
+
+const SPICY_KEYWORDS = ["harissa", "samourai", "algérienne", "algerienne", "chili", "piment", "sriracha", "marocaine"];
+function isSpicyName(name: string) {
+  const lower = name.toLowerCase();
+  return SPICY_KEYWORDS.some((k) => lower.includes(k));
+}
+
+// ─── GroupSection: renders one supplement group dynamically ───────────────────
+
+interface GroupSectionProps {
+  group: ApiSupplementGroup;
+  selected: string[];
+  hasError: boolean;
+  onChange: (groupId: string, newSelected: string[]) => void;
+}
+
+function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps) {
+  const isRadio  = group.max_selection === 1;
+  const isMulti  = group.max_selection > 1;
+  const atMax    = isMulti && selected.length >= group.max_selection;
+  const sectionId = `section-group-${group.id}`;
+
+  const toggle = (supId: string) => {
+    if (isRadio) {
+      // Radio — clicking the current selection clears it unless required
+      const alreadySelected = selected.includes(supId);
+      onChange(group.id, alreadySelected && !group.is_required ? [] : [supId]);
+    } else {
+      if (selected.includes(supId)) {
+        onChange(group.id, selected.filter((id) => id !== supId));
+      } else if (!atMax) {
+        onChange(group.id, [...selected, supId]);
+      }
+    }
+  };
+
+  const activeSupplements = group.supplements
+    .filter((s) => s.is_active)
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  const hasImages = activeSupplements.some((s) => s.image_url);
+
+  return (
+    <fieldset
+      id={sectionId}
+      className={`p-3 -mx-3 rounded-xl transition-all ${hasError ? "section-error" : ""}`}
+    >
+      {/* ── Legend ── */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <span className={`font-bold uppercase tracking-widest text-sm transition-colors ${hasError ? "text-red-400" : "text-white"}`}>
+          {group.name}
+        </span>
+
+        {group.is_required ? (
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 transition-colors
+            ${hasError
+              ? "border-red-400 bg-red-400/20 text-red-400"
+              : "border-red-500/50 bg-red-500/20 text-red-500"}`}>
+            Obligatoire
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5
+            border-white/20 bg-white/5 text-white/40">
+            Optionnel
+          </span>
+        )}
+
+        {isMulti && (
+          <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-500 border border-red-500/30 font-black tracking-tighter">
+            MAX {group.max_selection}
+          </span>
+        )}
+
+        {group.description && (
+          <span className="text-white/35 text-xs italic">{group.description}</span>
+        )}
+      </div>
+
+      {/* ── Inline error ── */}
+      {hasError && (
+        <div className="mb-3">
+          <ErrorBanner
+            message={`Veuillez choisir ${isRadio ? "une option" : "au moins une option"} pour « ${group.name} ».`}
+          />
+        </div>
+      )}
+
+      {/* ── Options — image cards or text chips ── */}
+      {hasImages ? (
+        <div className="grid grid-cols-2 gap-1.5">
+          {activeSupplements.map((sup) => (
+            <ImageOption
+              key={sup.id}
+              label={sup.name.trim()}
+              imageSrc={sup.image_url!}
+              selected={selected.includes(sup.id)}
+              price={sup.price > 0 ? sup.price : undefined}
+              disabled={atMax && !selected.includes(sup.id)}
+              onClick={() => toggle(sup.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {activeSupplements.map((sup) => (
+            <div key={sup.id} className="flex items-center gap-1">
+              <OptionChip
+                label={sup.name.trim()}
+                selected={selected.includes(sup.id)}
+                disabled={atMax && !selected.includes(sup.id)}
+                onClick={() => toggle(sup.id)}
+              />
+              {isSpicyName(sup.name) && <FlameIcon />}
+              {sup.price > 0 && (
+                <span className="text-white/40 text-xs">+{sup.price.toFixed(2)}€</span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </fieldset>
+  );
+}
+
 // ─── Main modal ───────────────────────────────────────────────────────────────
 
 export default function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductModalProps) {
   const [quantity, setQuantity] = useState(1);
-  const [crudites, setCrudites] = useState<string[]>(["Salade", "Tomate", "Oignon"]);
-  const [bread, setBread] = useState("Pain Naan");
-  const [sauces, setSauces] = useState<string[]>([]);
-  const [menuFormule, setMenuFormule] = useState(false);
-  const [isStudent, setIsStudent] = useState(false);
-  const [supplements, setSupplements] = useState<string[]>([]);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
+  /**
+   * One entry per group: groupId → array of selected supplement ids.
+   * Replaces all the old hardcoded crudites / bread / sauces / supplements state.
+   */
+  const [groupSelections, setGroupSelections] = useState<Record<string, string[]>>({});
+
+  /** Group ids whose required-validation failed */
+  const [errors, setErrors] = useState<Set<string>>(new Set());
+
+  const scrollRef      = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Reset state when product changes
+  // Pull supplement groups off the product (attached in JustCool.tsx mapProduct())
+  const supplementGroups: ApiSupplementGroup[] =
+    (product as any)?.supplementGroups ?? [];
+
+  // ── Reset when product changes ────────────────────────────────────────────
   useEffect(() => {
     if (product) {
       setQuantity(1);
-      setCrudites(["Salade", "Tomate", "Oignon"]);
-      setBread("Pain Naan");
-      setSauces([]);
-      setMenuFormule(false);
-      setIsStudent(false);
-      setSupplements([]);
-      // Scroll content to top
+      setGroupSelections({});
+      setErrors(new Set());
       setTimeout(() => { scrollRef.current?.scrollTo({ top: 0 }); }, 50);
     }
   }, [product]);
 
-  // Trap focus & keyboard dismiss
+  // ── Auto-clear errors when groups become valid ────────────────────────────
+  useEffect(() => {
+    setErrors((prev) => {
+      if (prev.size === 0) return prev;
+      const next = new Set(prev);
+      supplementGroups.forEach((g) => {
+        if (!g.is_required) return;
+        const sel = groupSelections[g.id] ?? [];
+        if (sel.length >= Math.max(1, g.min_selection)) next.delete(g.id);
+      });
+      return next;
+    });
+  }, [groupSelections, supplementGroups]);
+
+  // ── Keyboard dismiss + scroll lock ───────────────────────────────────────
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -241,44 +332,61 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
     };
   }, [isOpen, onClose]);
 
-  const toggleCrudite = useCallback((item: string) => {
-    setCrudites((prev) => prev.includes(item) ? prev.filter((c) => c !== item) : [...prev, item]);
+  const handleGroupChange = useCallback((groupId: string, newSelected: string[]) => {
+    setGroupSelections((prev) => ({ ...prev, [groupId]: newSelected }));
   }, []);
 
-  const toggleSauce = useCallback((id: string) => {
-    setSauces((prev) => {
-      if (prev.includes(id)) return prev.filter((s) => s !== id);
-      if (prev.length >= MAX_SAUCES) return prev;
-      return [...prev, id];
+  // ── Validation + scroll-to-error ──────────────────────────────────────────
+  const handleAdd = () => {
+    if (!product) return;
+
+    const failedGroups = supplementGroups.filter((g) => {
+      if (!g.is_required) return false;
+      const sel = groupSelections[g.id] ?? [];
+      return sel.length < Math.max(1, g.min_selection);
     });
-  }, []);
 
-  const toggleSupplement = useCallback((id: string) => {
-    setSupplements((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]);
-  }, []);
+    if (failedGroups.length > 0) {
+      setErrors(new Set(failedGroups.map((g) => g.id)));
+      const firstId = `section-group-${failedGroups[0].id}`;
+      const firstEl = scrollRef.current?.querySelector(`#${firstId}`);
+      if (firstEl && scrollRef.current) {
+        scrollRef.current.scrollTo({
+          top: (firstEl as HTMLElement).offsetTop - 16,
+          behavior: "smooth",
+        });
+      }
+      return;
+    }
 
-  const selectAllCrudites = () => setCrudites([...CRUDITES]);
-  const clearCrudites = () => setCrudites([]);
+    const allSelectedIds = Object.values(groupSelections).flat();
+    onAddToCart(product, quantity, {
+      // Legacy fields kept so callers don't need changes
+      crudites: [], bread: "", sauces: [], menuFormule: false, isStudent: false,
+      supplements: allSelectedIds,
+      groupSelections,
+    });
+    onClose();
+  };
 
+  // ── Total price (base + per-quantity supplement prices) ───────────────────
   const totalPrice = (() => {
     if (!product) return 0;
     let total = product.price * quantity;
-    if (menuFormule) total += MENU_UPCHARGE * quantity;
-    if (menuFormule && isStudent) total -= STUDENT_DISCOUNT * quantity;
-    supplements.forEach((id) => {
-      const sup = SUPPLEMENTS.find((s) => s.id === id);
-      if (sup) total += sup.price * quantity;
+    supplementGroups.forEach((g) => {
+      (groupSelections[g.id] ?? []).forEach((supId) => {
+        const sup = g.supplements.find((s) => s.id === supId);
+        if (sup) total += sup.price * quantity;
+      });
     });
     return total;
   })();
 
-  const handleAdd = () => {
-    if (!product) return;
-    onAddToCart(product, quantity, { crudites, bread, sauces, menuFormule, isStudent, supplements });
-    onClose();
-  };
-
   if (!isOpen || !product) return null;
+
+  const visibleGroups = supplementGroups
+    .filter((g) => g.supplements.some((s) => s.is_active))
+    .sort((a, b) => a.sort_order - b.sort_order);
 
   return (
     <>
@@ -288,9 +396,22 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
         .modal-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
         @keyframes modal-in {
           from { opacity: 0; transform: translateY(24px) scale(0.97); }
-          to   { opacity: 1; transform: translateY(0)    scale(1); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes shake {
+          0%,100% { transform: translateX(0); }
+          20%     { transform: translateX(-5px); }
+          40%     { transform: translateX(5px); }
+          60%     { transform: translateX(-4px); }
+          80%     { transform: translateX(4px); }
+        }
+        @keyframes error-highlight {
+          0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+          30%  { box-shadow: 0 0 0 4px rgba(239,68,68,0.35); }
+          100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
         }
         .modal-animate { animation: modal-in 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .section-error { animation: error-highlight 0.9s ease forwards; border-radius: 12px; }
       `}</style>
 
       {/* Backdrop */}
@@ -302,8 +423,10 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
         aria-labelledby="modal-title"
       >
         {/* Panel */}
-        <div className="modal-animate relative flex flex-col bg-zinc-950 w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl"
-          style={{ maxHeight: "90dvh" }}>
+        <div
+          className="modal-animate relative flex flex-col bg-zinc-950 w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl"
+          style={{ maxHeight: "90dvh" }}
+        >
 
           {/* ── Header ── */}
           <div className="flex items-center justify-between bg-red-600 px-4 py-3.5 shrink-0">
@@ -325,25 +448,31 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
             <div className="p-5 space-y-6">
 
               {/* Product image */}
-              <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-black">
-                <img
-                  alt={product.name}
-                  src={product.imageSrc}
-                  className="absolute inset-0 w-full h-full object-contain"
-                  style={{ background: "radial-gradient(circle farthest-side, #444 -80px, #111)" }}
-                />
-              </div>
+              {product.imageSrc && (
+                <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-black">
+                  <img
+                    alt={product.name}
+                    src={product.imageSrc}
+                    className="absolute inset-0 w-full h-full object-contain"
+                    style={{ background: "radial-gradient(circle farthest-side, #444 -80px, #111)" }}
+                  />
+                </div>
+              )}
 
               {/* Description */}
-              <div className="space-y-1 px-1">
-                <p className="text-white/60 text-base leading-relaxed">{product.mainIngredient}</p>
-                {product.extras && (
-                  <p className="text-white/40 text-xs flex items-center gap-1.5">
-                    <span className="font-bold text-red-500">+ / −</span>
-                    Crudités : {product.extras.replace("+ ", "")}
-                  </p>
-                )}
-              </div>
+              {(product.mainIngredient || product.extras) && (
+                <div className="space-y-1 px-1">
+                  {product.mainIngredient && (
+                    <p className="text-white/60 text-base leading-relaxed">{product.mainIngredient}</p>
+                  )}
+                  {product.extras && (
+                    <p className="text-white/40 text-xs flex items-center gap-1.5">
+                      <span className="font-bold text-red-500">+ / −</span>
+                      {product.extras}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Price */}
               <div>
@@ -357,217 +486,55 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 </p>
               </div>
 
-              <Separator />
-
-              {/* ── Crudités ── */}
-              <fieldset className="space-y-4">
-                <SectionLegend>Choisissez vos crudités</SectionLegend>
-
-                {/* Quick select */}
-                <div className="space-y-2">
-                  <span className="text-white/40 text-xs uppercase tracking-widest block">Sélection rapide</span>
-                  <div className="flex gap-3">
-                    {/* Nature */}
-                    <div className="flex flex-col items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={clearCrudites}
-                        className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-md border text-xs transition-all
-                          ${crudites.length === 0
-                            ? "bg-red-600/20 border-red-600 text-white"
-                            : "bg-white/5 border-white/20 text-white/60 hover:bg-white/10"}`}
-                      >
-                        <span className="text-white/40 tracking-wider uppercase text-[10px]">NATURE</span>
-                        <span className="line-through text-lg" aria-hidden="true">🥬 🍅 🧅</span>
-                      </button>
-                      <span className="text-white/40 text-xs">aucune crudité</span>
-                    </div>
-                    {/* Complet */}
-                    <div className="flex flex-col items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={selectAllCrudites}
-                        className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-md border text-xs transition-all
-                          ${crudites.length === CRUDITES.length
-                            ? "bg-red-600/20 border-red-600 text-white"
-                            : "bg-white/5 border-white/20 text-white/60 hover:bg-white/10"}`}
-                      >
-                        <span className="text-white/40 tracking-wider uppercase text-[10px]">COMPLET</span>
-                        <span className="text-lg" aria-hidden="true">🥬 🍅 🧅</span>
-                      </button>
-                      <span className="text-white/40 text-xs">toutes les crudités</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Individual */}
-                <div className="space-y-2">
-                  <span className="text-white/40 text-xs uppercase tracking-widest block">Ou sélection individuelle</span>
-                  <div className="flex flex-wrap gap-3">
-                    {CRUDITES.map((c) => (
-                      <label key={c} className="flex items-center gap-2 cursor-pointer group">
-                        <button
-                          type="button"
-                          role="checkbox"
-                          aria-checked={crudites.includes(c)}
-                          onClick={() => toggleCrudite(c)}
-                          className={`h-4 w-4 rounded-sm border transition-all flex items-center justify-center
-                            ${crudites.includes(c)
-                              ? "bg-red-600 border-red-600"
-                              : "border-white/20 bg-transparent"}`}
-                        >
-                          {crudites.includes(c) && <CheckIcon />}
-                        </button>
-                        <span className="text-white/70 text-xs uppercase font-bold">{c}</span>
-                      </label>
+              {/* ── Dynamic supplement groups ── */}
+              {visibleGroups.length > 0 && (
+                <>
+                  <Separator />
+                  <div className="space-y-6">
+                    {visibleGroups.map((group, idx) => (
+                      <React.Fragment key={group.id}>
+                        <GroupSection
+                          group={group}
+                          selected={groupSelections[group.id] ?? []}
+                          hasError={errors.has(group.id)}
+                          onChange={handleGroupChange}
+                        />
+                        {idx < visibleGroups.length - 1 && <Separator />}
+                      </React.Fragment>
                     ))}
                   </div>
-                </div>
-              </fieldset>
+                </>
+              )}
 
-              <Separator />
-
-              {/* ── Bread ── */}
-              <fieldset>
-                <SectionLegend>Choisissez votre pain</SectionLegend>
-                <div className="flex flex-wrap gap-2">
-                  {BREADS.map((b) => (
-                    <OptionChip key={b} label={b} selected={bread === b} onClick={() => setBread(b)} />
-                  ))}
-                </div>
-              </fieldset>
-
-              <Separator />
-
-              {/* ── Sauces ── */}
-              <fieldset>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="font-bold uppercase tracking-widest text-sm text-white">
-                    Choisissez vos sauces
-                  </span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-500 border border-red-500/30 font-black tracking-tighter">
-                    MAX {MAX_SAUCES}
-                  </span>
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider
-                    border border-red-500/50 bg-red-500/20 text-red-500 h-5">
-                    Obligatoire
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {SAUCES.map((s) => (
-                    <ImageOption
-                      key={s.id}
-                      label={s.label}
-                      imageSrc={s.imageSrc}
-                      selected={sauces.includes(s.id)}
-                      disabled={sauces.length >= MAX_SAUCES && !sauces.includes(s.id)}
-                      isSpicy={s.isSpicy}
-                      onClick={() => toggleSauce(s.id)}
-                    />
-                  ))}
-                </div>
-              </fieldset>
-
-              <Separator />
-
-              {/* ── Menu formule ── */}
-              <div>
-                <label className="flex items-center justify-between gap-4 cursor-pointer">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="font-bold text-white text-sm uppercase tracking-widest">
-                      Ajoutez la formule menu
-                    </span>
-                    <span className="text-white/40 text-xs">frites + boisson</span>
-                  </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="font-black text-red-600 text-sm">+{MENU_UPCHARGE.toFixed(2)}€</span>
-                    <button
-                      type="button"
-                      role="checkbox"
-                      aria-checked={menuFormule}
-                      onClick={() => { setMenuFormule((v) => !v); if (!menuFormule) setIsStudent(false); }}
-                      className={`h-5 w-5 rounded-sm border transition-all flex items-center justify-center
-                        ${menuFormule ? "bg-red-600 border-red-600" : "border-red-600 bg-transparent"}`}
-                    >
-                      {menuFormule && <CheckIcon />}
-                    </button>
-                  </div>
-                </label>
-
-                {/* Student discount — only shown when menu is active */}
-                <div className={`mt-3 pl-2 transition-all duration-300 ${menuFormule ? "opacity-100" : "opacity-30 pointer-events-none"}`}>
-                  <label className="flex items-center justify-between gap-4 cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold uppercase tracking-widest text-white/70 text-xs">
-                        Offre spéciale étudiant
-                      </span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider
-                        border border-green-500/50 bg-green-500/20 text-green-500 h-5">
-                        −{STUDENT_DISCOUNT.toFixed(2)}€ sur le menu
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      role="checkbox"
-                      aria-checked={isStudent}
-                      disabled={!menuFormule}
-                      onClick={() => setIsStudent((v) => !v)}
-                      className={`h-4 w-4 rounded-sm border transition-all flex items-center justify-center shrink-0
-                        ${isStudent ? "bg-green-500 border-green-500" : "border-green-500 bg-transparent"}`}
-                    >
-                      {isStudent && <CheckIcon />}
-                    </button>
-                  </label>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* ── Supplements ── */}
-              <fieldset className="pb-2">
-                <div className="font-bold uppercase tracking-widest text-sm text-white mb-4">
-                  Ajoutez vos suppléments
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {SUPPLEMENTS.map((s) => (
-                    <ImageOption
-                      key={s.id}
-                      label={s.label}
-                      imageSrc={s.imageSrc}
-                      selected={supplements.includes(s.id)}
-                      price={s.price}
-                      onClick={() => toggleSupplement(s.id)}
-                    />
-                  ))}
-                </div>
-              </fieldset>
+              {visibleGroups.length === 0 && (
+                <p className="text-white/30 text-xs italic text-center py-4">
+                  Aucune option de personnalisation disponible.
+                </p>
+              )}
 
             </div>
           </div>
 
-          {/* ── Footer / Add to cart ── */}
+          {/* ── Footer ── */}
           <div className="px-4 py-3.5 bg-black/60 backdrop-blur-md border-t border-white/10 shrink-0">
             <div className="flex items-center gap-3">
+
               {/* Quantity */}
               <div className="flex items-center gap-2 bg-white/5 rounded-full px-1.5 py-1 border border-white/10 shrink-0">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-white text-lg hover:bg-white/10 transition-colors"
                   aria-label="Diminuer la quantité"
-                >
-                  −
-                </button>
+                >−</button>
                 <span className="font-bold text-white text-sm w-4 text-center select-none">{quantity}</span>
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
                   className="w-8 h-8 rounded-full flex items-center justify-center text-white text-lg hover:bg-white/10 transition-colors"
                   aria-label="Augmenter la quantité"
-                >
-                  +
-                </button>
+                >+</button>
               </div>
 
-              {/* Add button */}
+              {/* Add to cart */}
               <button
                 onClick={handleAdd}
                 className="flex-1 flex items-center justify-between h-12 px-5 rounded-lg

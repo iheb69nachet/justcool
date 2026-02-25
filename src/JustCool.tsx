@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Hero from "./components/Hero";
-import CategoryNav, { CATEGORIES } from "./components/CategoryNav";
+import CategoryNav from "./components/CategoryNav";
 import CategorySection from "./components/CategorySection";
 import Footer from "./components/Footer";
 import type { Product } from "./components/CategorySection";
@@ -20,117 +20,105 @@ interface OrderOptions {
   supplements: string[];
 }
 
-// ─── Product Data ─────────────────────────────────────────────────────────────
+// ─── API Types ────────────────────────────────────────────────────────────────
 
-const naanProducts: Product[] = [
-  { id: "naan-1",  name: "Le Just Cool",  mainIngredient: "Double steak, Pomme de terre, Cheddar",                extras: "+ Salade, Tomate, Oignon", price: 9.00, imageSrc: "https://justcool.fr/assets/images/products/naans/le-just-cool.webp" },
-  { id: "naan-2",  name: "Kebab",         mainIngredient: "Viande de kebab",                                      extras: "+ Salade, Tomate, Oignon", price: 7.50, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-kebab.webp" },
-  { id: "naan-3",  name: "Tenders",       mainIngredient: "Tenders de poulet",                                    extras: "+ Salade, Tomate, Oignon", price: 7.50, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-tenders.webp" },
-  { id: "naan-4",  name: "Poulet Curry",  mainIngredient: "Poulet au curry",                                      extras: "+ Salade, Tomate, Oignon", price: 7.50, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-poulet-curry.webp" },
-  { id: "naan-5",  name: "Veggie",        mainIngredient: "Légumes frais, cheddar",                               extras: "+ Salade, Tomate, Oignon", price: 7.50, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-veggie.webp" },
-  { id: "naan-6",  name: "Cordon bleu",   mainIngredient: "Cordon bleu",                                          extras: "+ Salade, Tomate, Oignon", price: 7.50, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-cordon-bleu.webp" },
-  { id: "naan-7",  name: "Falafel",       mainIngredient: "Falafel",                                              extras: "+ Salade, Tomate, Oignon", price: 7.50, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-falafel.webp" },
-  { id: "naan-8",  name: "L'oriental",    mainIngredient: "Poulet mariné épicé (spicy) avec poivrons et oignons", extras: "+ Salade, Tomate, Oignon", price: 8.00, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-oriental.webp" },
-  { id: "naan-9",  name: "Steak",         mainIngredient: "Steak grillé",                                         extras: "+ Salade, Tomate, Oignon", price: 7.50, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-steak.webp" },
-  { id: "naan-10", name: "Merguez",       mainIngredient: "Merguez",                                              extras: "+ Salade, Tomate, Oignon", price: 7.50, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-merguez.webp" },
-  { id: "naan-11", name: "Boursin",       mainIngredient: "Escalope + Boursin",                                   extras: "+ Salade, Tomate, Oignon", price: 8.50, isNew: true, imageSrc: "https://justcool.fr/assets/images/products/naans/naan-boursin.webp" },
-];
+interface ApiSupplement {
+  id: string;
+  name: string;
+  price: number;
+  is_active: boolean;
+  sort_order: number;
+  image_url: string | null;
+}
 
-const naanBurgerProducts: Product[] = [
-  { id: "nb-1", name: "Double Naan Burger",        mainIngredient: "Double steak haché, cheddar",    extras: "+ Salade, Tomate, Oignon", price: 8.50,  imageSrc: "https://justcool.fr/assets/images/products/naan-burgers/naan-burger-double.webp" },
-  { id: "nb-2", name: "Naan Chicken Burger",        mainIngredient: "Poulet pané, cheddar",           extras: "+ Salade, Tomate",         price: 7.50,  imageSrc: "https://justcool.fr/assets/images/products/naan-burgers/naan-burger-chicken.webp" },
-  { id: "nb-3", name: "Naan Burger",                mainIngredient: "Steak haché, cheddar",           extras: "+ Salade, Tomate, Oignon", price: 7.50,  imageSrc: "https://justcool.fr/assets/images/products/naan-burgers/naan-burger.webp" },
-  { id: "nb-4", name: "Naan Bacon Burger",          mainIngredient: "Steak, bacon, cheddar",          extras: "+ Salade, Tomate",         price: 10.00, imageSrc: "https://justcool.fr/assets/images/products/naan-burgers/naan-burger-bacon.webp" },
-  { id: "nb-5", name: "Naan Double Chicken Burger", mainIngredient: "Double poulet pané, cheddar",    extras: "+ Salade",                 price: 8.50,  imageSrc: "https://justcool.fr/assets/images/products/naan-burgers/naan-burger-double-chicken.webp" },
-  { id: "nb-6", name: "Duo Naan Burger",            mainIngredient: "Steak + poulet pané, cheddar",   extras: "+ Salade, Tomate",         price: 9.00,  imageSrc: "https://justcool.fr/assets/images/products/naan-burgers/naan-burger-duo.webp" },
-  { id: "nb-7", name: "Naan Burger 180",            mainIngredient: "180g de viande hachée, cheddar", extras: "+ Salade, Tomate, Oignon", price: 10.00, imageSrc: "https://justcool.fr/assets/images/products/naan-burgers/naan-burger-180.webp" },
-  { id: "nb-8", name: "Naan Burger 260",            mainIngredient: "260g de viande hachée, cheddar", extras: "+ Salade, Tomate, Oignon", price: 12.00, imageSrc: "https://justcool.fr/assets/images/products/naan-burgers/naan-burger-260.webp" },
-];
+interface ApiSupplementGroup {
+  id: string;
+  name: string;
+  description: string;
+  is_required: boolean;
+  min_selection: number;
+  max_selection: number;
+  sort_order: number;
+  supplements: ApiSupplement[];
+}
 
-const burgerProducts: Product[] = [
-  { id: "b-1", name: "Le Bulle",           mainIngredient: "Steak haché, cheddar, sauce maison",  extras: "+ Salade, Tomate, Oignon", price: 11.00, isNew: true, imageSrc: "https://justcool.fr/assets/images/products/burgers/burger-le-bulle.webp" },
-  { id: "b-2", name: "Duo Burger",          mainIngredient: "Double steak haché, cheddar",         extras: "+ Salade, Tomate, Oignon", price: 8.00,  imageSrc: "https://justcool.fr/assets/images/products/burgers/burger-duo.webp" },
-  { id: "b-3", name: "Burger Bacon",        mainIngredient: "Steak, bacon, cheddar",               extras: "+ Salade, Tomate",         price: 8.50,  imageSrc: "https://justcool.fr/assets/images/products/burgers/burger-bacon.webp" },
-  { id: "b-4", name: "Burger 180",          mainIngredient: "180g de viande hachée, cheddar",      extras: "+ Salade, Tomate, Oignon", price: 8.50,  imageSrc: "https://justcool.fr/assets/images/products/burgers/burger-180.webp" },
-  { id: "b-5", name: "Burger 260",          mainIngredient: "260g de viande hachée, cheddar",      extras: "+ Salade, Tomate",         price: 11.00, imageSrc: "https://justcool.fr/assets/images/products/burgers/burger-260.webp" },
-  { id: "b-6", name: "Double Steak Burger", mainIngredient: "Double steak haché, cheddar",         extras: "+ Salade, Tomate, Oignon", price: 7.50,  imageSrc: "https://justcool.fr/assets/images/products/burgers/burger-double-steak.webp" },
-  { id: "b-7", name: "Cheese Burger",       mainIngredient: "Steak haché, double cheddar",         extras: "+ Salade, Tomate",         price: 6.50,  imageSrc: "https://justcool.fr/assets/images/products/burgers/burger-cheese.webp" },
-  { id: "b-8", name: "Chicken Burger",      mainIngredient: "Poulet pané, cheddar",                extras: "+ Salade, Tomate, Oignon", price: 6.50,  imageSrc: "https://justcool.fr/assets/images/products/burgers/burger-chicken.webp" },
-];
+interface ApiProduct {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  is_active: boolean;
+  sort_order: number;
+  image_url: string | null;
+  supplement_groups: ApiSupplementGroup[];
+}
 
-const assiettesProducts: Product[] = [
-  { id: "a-1", name: "Assiette 1 Viande",   mainIngredient: "1 viande au choix",           extras: "Frites + Salade", price: 9.00,  imageSrc: "https://justcool.fr/assets/images/products/assiettes/assiette-1-viande.webp" },
-  { id: "a-2", name: "Assiette 2 Viandes",  mainIngredient: "2 viandes au choix",          extras: "Frites + Salade", price: 11.00, imageSrc: "https://justcool.fr/assets/images/products/assiettes/assiette-2-viandes.webp" },
-  { id: "a-3", name: "Assiette 3 Viandes",  mainIngredient: "3 viandes au choix",          extras: "Frites + Salade", price: 13.00, imageSrc: "https://justcool.fr/assets/images/products/assiettes/assiette-3-viandes.webp" },
-  { id: "a-4", name: "Assiette 1 Viande+",  mainIngredient: "1 viande premium au choix",   extras: "Frites + Salade", price: 12.00, imageSrc: "https://justcool.fr/assets/images/products/assiettes/assiette-1-viande-plus.webp" },
-  { id: "a-5", name: "Assiette 2 Viandes+", mainIngredient: "2 viandes premium au choix",  extras: "Frites + Salade", price: 13.00, imageSrc: "https://justcool.fr/assets/images/products/assiettes/assiette-2-viandes-plus.webp" },
-  { id: "a-6", name: "Assiette 3 Viandes+", mainIngredient: "3 viandes premium au choix",  extras: "Frites + Salade", price: 14.50, imageSrc: "https://justcool.fr/assets/images/products/assiettes/assiette-3-viandes-plus.webp" },
-];
+interface ApiCategory {
+  id: string;
+  name: string;
+  description: string;
+  sort_order: number;
+  is_active: boolean;
+  products: ApiProduct[];
+}
 
-const tacosProducts: Product[] = [
-  { id: "t-1", name: "Tacos M",       mainIngredient: "1 viande au choix, frites",   extras: "Sauce au choix",           price: 8.00,  imageSrc: "https://justcool.fr/assets/images/products/tacos/tacos-m.webp" },
-  { id: "t-2", name: "Tacos L",       mainIngredient: "2 viandes au choix, frites",  extras: "Sauce au choix",           price: 9.00,  imageSrc: "https://justcool.fr/assets/images/products/tacos/tacos-l.webp" },
-  { id: "t-3", name: "Tacos XL",      mainIngredient: "3 viandes au choix, frites",  extras: "Sauce au choix",           price: 10.00, imageSrc: "https://justcool.fr/assets/images/products/tacos/tacos-xl.webp" },
-  { id: "t-4", name: "Tacos XXL",     mainIngredient: "4 viandes au choix, frites",  extras: "Sauce au choix",           price: 12.00, isNew: true, imageSrc: "https://justcool.fr/assets/images/products/tacos/tacos-xxl.webp" },
-  { id: "t-5", name: "Tacos Kebab",   mainIngredient: "Viande de kebab, frites",     extras: "+ Salade, Tomate, Oignon", price: 8.50,  imageSrc: "https://justcool.fr/assets/images/products/tacos/tacos-kebab.webp" },
-  { id: "t-6", name: "Tacos Merguez", mainIngredient: "Merguez, frites",             extras: "Sauce au choix",           price: 8.50,  imageSrc: "https://justcool.fr/assets/images/products/tacos/tacos-merguez.webp" },
-];
+// ─── Mapping helpers ──────────────────────────────────────────────────────────
 
-const texmexProducts: Product[] = [
-  { id: "tx-1", name: "Quesadilla Poulet", mainIngredient: "Poulet grillé, cheddar, poivrons",       extras: "Sauce salsa",              price: 8.00, imageSrc: "https://justcool.fr/assets/images/products/snacks/quesadilla-poulet.webp" },
-  { id: "tx-2", name: "Quesadilla Bœuf",  mainIngredient: "Bœuf haché épicé, cheddar, jalapeños",   extras: "Sauce salsa",              price: 8.50, imageSrc: "https://justcool.fr/assets/images/products/snacks/quesadilla-boeuf.webp" },
-  { id: "tx-3", name: "Burrito Poulet",    mainIngredient: "Poulet, riz, haricots, cheddar",         extras: "Sauce salsa + crème",      price: 9.00, imageSrc: "https://justcool.fr/assets/images/products/snacks/burrito-poulet.webp" },
-  { id: "tx-4", name: "Burrito Bœuf",     mainIngredient: "Bœuf haché, riz, haricots, cheddar",     extras: "Sauce salsa + crème",      price: 9.50, imageSrc: "https://justcool.fr/assets/images/products/snacks/burrito-boeuf.webp" },
-  { id: "tx-5", name: "Nachos",           mainIngredient: "Chips de maïs, cheddar fondu",           extras: "Sauce jalapeño ou tomate", price: 5.00, imageSrc: "https://justcool.fr/assets/images/products/snacks/nachos.webp" },
-  { id: "tx-6", name: "Wings Tex-Mex",    mainIngredient: "Ailes de poulet marinées épicées",       extras: "Sauce BBQ ou ranch",       price: 7.00, imageSrc: "https://justcool.fr/assets/images/products/snacks/wings-tex-mex.webp" },
-];
+/**
+ * Slugify a category name to use as DOM id / navigation key.
+ * e.g. "Naan Burger" → "naan-burger"
+ */
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-");
+}
 
-const dessertProducts: Product[] = [
-  { id: "d-1", name: "Churros",    mainIngredient: "Churros maison à la cannelle",          extras: "Sauce caramel",   price: 3.50, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/desserts/churros.webp" },
-  { id: "d-2", name: "Brownie",    mainIngredient: "Brownie chocolat fondant",              extras: "Crème anglaise",  price: 3.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/desserts/brownie.webp" },
-  { id: "d-3", name: "Cookie",     mainIngredient: "Cookie double chocolat, noix de pécan", extras: "",               price: 2.50, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/desserts/cookie.webp" },
-  { id: "d-4", name: "Glace",      mainIngredient: "Boule de glace artisanale (2 boules)",  extras: "Parfum au choix", price: 3.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/desserts/glace.webp" },
-  { id: "d-5", name: "Cheesecake", mainIngredient: "Cheesecake New-York aux fruits rouges", extras: "",               price: 4.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/desserts/cheesecake.webp" },
-  { id: "d-6", name: "Tiramisu",   mainIngredient: "Tiramisu café & mascarpone",            extras: "",               price: 4.50, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/desserts/tiramisu.webp" },
-];
+/**
+ * Map an ApiProduct to the Product shape the existing components expect.
+ * supplement_groups are stored on the product so ProductModal can use them.
+ */
+function mapProduct(apiProduct: ApiProduct): Product {
+  // Build a human-readable extras string from group descriptions
+  const extrasGroups = apiProduct.supplement_groups
+    .filter((g) => !g.is_required && g.supplements.length > 0)
+    .map((g) => g.name)
+    .slice(0, 2)
+    .join(", ");
 
-const boissonProducts: Product[] = [
-  { id: "bv-1", name: "Boisson 33cl",    mainIngredient: "Coca-Cola, Fanta, Sprite, Ice Tea",   extras: "",               price: 2.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/boissons/boisson-33cl.webp" },
-  { id: "bv-2", name: "Eau Minérale",    mainIngredient: "Eau plate ou pétillante 50cl",        extras: "",               price: 1.50, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/boissons/eau-minerale.webp" },
-  { id: "bv-3", name: "Jus de fruit",    mainIngredient: "Jus d'orange, pomme ou ananas 25cl",  extras: "",               price: 2.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/boissons/jus-fruit.webp" },
-  { id: "bv-4", name: "Capri-Sun",       mainIngredient: "Capri-Sun 20cl, diverses saveurs",    extras: "",               price: 1.50, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/boissons/capri-sun.webp" },
-  { id: "bv-5", name: "Limonade",        mainIngredient: "Limonade artisanale maison",          extras: "Citron, menthe", price: 2.50, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/boissons/limonade.webp" },
-  { id: "bv-6", name: "Thé à la menthe", mainIngredient: "Thé vert à la menthe fraîche",        extras: "Chaud ou froid", price: 2.50, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/boissons/the-menthe.webp" },
-];
+  return {
+    id: apiProduct.id,
+    name: apiProduct.name.trim(),
+    mainIngredient: apiProduct.description || "",
+    extras: extrasGroups,
+    price: apiProduct.price,
+    imageSrc: apiProduct.image_url ?? undefined,
+    // Attach raw supplement groups so ProductModal can render them
+    supplementGroups: apiProduct.supplement_groups,
+  };
+}
 
-const plusProducts: Product[] = [
-  { id: "p-1", name: "Frites",        mainIngredient: "Frites fraîches maison",                 extras: "Sel + ketchup", price: 3.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/plus/frites.webp" },
-  { id: "p-2", name: "Frites Cheezy", mainIngredient: "Frites recouvertes de sauce fromagère",  extras: "",              price: 4.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/plus/frites-cheezy.webp" },
-  { id: "p-3", name: "Salade",        mainIngredient: "Salade verte, tomates, oignons",         extras: "Vinaigrette",   price: 3.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/plus/salade.webp" },
-  { id: "p-4", name: "Sauce Sup.",    mainIngredient: "Sauce supplémentaire au choix",           extras: "",              price: 0.50, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/plus/sauce-sup.webp" },
-  { id: "p-5", name: "Pain seul",     mainIngredient: "Pain naan, galette ou turc",              extras: "",              price: 1.00, menuUpcharge: 0, studentDiscount: 0, imageSrc: "https://justcool.fr/assets/images/products/plus/pain.webp" },
-];
-
-const SECTIONS = [
-  { categoryId: "naans",        categoryLabel: "Naans",        products: naanProducts },
-  { categoryId: "naan_burgers", categoryLabel: "Naan Burgers", products: naanBurgerProducts },
-  { categoryId: "burgers",      categoryLabel: "Burgers",      products: burgerProducts },
-  { categoryId: "assiettes",    categoryLabel: "Assiettes",    products: assiettesProducts },
-  { categoryId: "tacos",        categoryLabel: "Tacos",        products: tacosProducts },
-  { categoryId: "snacks",       categoryLabel: "Tex-Mex",      products: texmexProducts },
-  { categoryId: "desserts",     categoryLabel: "Desserts",     products: dessertProducts },
-  { categoryId: "boissons",     categoryLabel: "Boissons",     products: boissonProducts },
-  { categoryId: "plus",         categoryLabel: "Plus",         products: plusProducts },
-];
+function mapCategories(apiCategories: ApiCategory[]) {
+  return apiCategories
+    .filter((c) => c.is_active)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((cat) => ({
+      categoryId: slugify(cat.name),
+      categoryLabel: cat.name.trim(),
+      products: cat.products
+        .filter((p) => p.is_active)
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map(mapProduct),
+    }));
+}
 
 const STICKY_OFFSET = 60 + 48;
+const API_URL = "http://15.235.197.224:5050/menu/justcool/categories";
 
 // ─── Cart helpers ──────────────────────────────────────────────────────────────
 
-/**
- * Build a stable cart line ID from product + options so the same
- * product with different options creates separate cart lines.
- */
 function makeCartId(productId: string, options: OrderOptions): string {
   const key = [
     productId,
@@ -154,11 +142,18 @@ function calcUnitPrice(product: Product, options: OrderOptions): number {
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function JustCool() {
+  // ── Data state ──────────────────────────────────────────────────────────────
+  const [sections, setSections] = useState<
+    { categoryId: string; categoryLabel: string; products: Product[] }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // ── Cart / UI state ─────────────────────────────────────────────────────────
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [dineMode, setDineMode] = useState<"surplace" | "emporter">("surplace");
-
-  const [activeCategory, setActiveCategory] = useState(SECTIONS[0].categoryId);
+  const [activeCategory, setActiveCategory] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -167,10 +162,408 @@ export default function JustCool() {
 
   const cartCount = cartItems.reduce((s, i) => s + i.quantity, 0);
 
+  // ── Fetch categories from API ───────────────────────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchData() {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await fetch(API_URL);
+//         let varss=[
+//   {
+//     "name": "Naans",
+//     "description": "Nos naans garnis maison",
+//     "sort_order": 0,
+//     "is_active": true,
+//     "id": "cat-naan-001",
+//     "created_at": "2026-02-01T10:00:00.000000",
+//     "updated_at": "2026-02-01T10:00:00.000000",
+//     "products": [
+//       {
+//         "name": "Le Just Cool",
+//         "description": "Double steak, Pomme de terre, Cheddar",
+//         "price": 9.00,
+//         "is_active": true,
+//         "sort_order": 0,
+//         "id": "prod-naan-001",
+//         "category_id": "cat-naan-001",
+//         "image_url": "https://justcool.fr/assets/images/products/naans/le-just-cool.webp",
+//         "created_at": "2026-02-01T10:00:00.000000",
+//         "updated_at": "2026-02-01T10:00:00.000000",
+//         "supplement_groups": [
+//           {
+//             "name": "Choisissez vos crudités",
+//             "description": "",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 1,
+//             "sort_order": 0,
+//             "id": "grp-naan-001-crudites",
+//             "product_id": "prod-naan-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Aucune crudité", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-001", "group_id": "grp-naan-001-crudites", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Toutes les crudités", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-002", "group_id": "grp-naan-001-crudites", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           },
+//           {
+//             "name": "Choisissez vos sauces",
+//             "description": "Max 2",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 2,
+//             "sort_order": 1,
+//             "id": "grp-naan-001-sauces",
+//             "product_id": "prod-naan-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Blanche", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-s01", "group_id": "grp-naan-001-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Ketchup", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-s02", "group_id": "grp-naan-001-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Harissa", "price": 0.0, "is_active": true, "sort_order": 2, "id": "sup-s03", "group_id": "grp-naan-001-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Algérienne", "price": 0.0, "is_active": true, "sort_order": 3, "id": "sup-s04", "group_id": "grp-naan-001-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           },
+//           {
+//             "name": "Menu",
+//             "description": "",
+//             "is_required": false,
+//             "min_selection": 0,
+//             "max_selection": 1,
+//             "sort_order": 2,
+//             "id": "grp-naan-001-menu",
+//             "product_id": "prod-naan-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Ajoutez la formule menu (frites + boisson)", "price": 2.0, "is_active": true, "sort_order": 0, "id": "sup-m01", "group_id": "grp-naan-001-menu", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           },
+//           {
+//             "name": "Ajoutez vos suppléments",
+//             "description": "",
+//             "is_required": false,
+//             "min_selection": 0,
+//             "max_selection": 5,
+//             "sort_order": 3,
+//             "id": "grp-naan-001-supps",
+//             "product_id": "prod-naan-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Oeuf au plat", "price": 2.0, "is_active": true, "sort_order": 0, "id": "sup-sp01", "group_id": "grp-naan-001-supps", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Cheddar", "price": 2.0, "is_active": true, "sort_order": 1, "id": "sup-sp02", "group_id": "grp-naan-001-supps", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Bacon", "price": 2.0, "is_active": true, "sort_order": 2, "id": "sup-sp03", "group_id": "grp-naan-001-supps", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           }
+//         ]
+//       },
+//       {
+//         "name": "Naan Kebab",
+//         "description": "Viande de kebab marinée",
+//         "price": 7.50,
+//         "is_active": true,
+//         "sort_order": 1,
+//         "id": "prod-naan-002",
+//         "category_id": "cat-naan-001",
+//         "image_url": "https://justcool.fr/assets/images/products/naans/naan-kebab.webp",
+//         "created_at": "2026-02-01T10:00:00.000000",
+//         "updated_at": "2026-02-01T10:00:00.000000",
+//         "supplement_groups": [
+//           {
+//             "name": "Choisissez vos crudités",
+//             "description": "",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 1,
+//             "sort_order": 0,
+//             "id": "grp-naan-002-crudites",
+//             "product_id": "prod-naan-002",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Aucune crudité", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-n2-001", "group_id": "grp-naan-002-crudites", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Toutes les crudités", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-n2-002", "group_id": "grp-naan-002-crudites", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           },
+//           {
+//             "name": "Choisissez vos sauces",
+//             "description": "Max 2",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 2,
+//             "sort_order": 1,
+//             "id": "grp-naan-002-sauces",
+//             "product_id": "prod-naan-002",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Blanche", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-n2-s01", "group_id": "grp-naan-002-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Harissa", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-n2-s02", "group_id": "grp-naan-002-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Samourai", "price": 0.0, "is_active": true, "sort_order": 2, "id": "sup-n2-s03", "group_id": "grp-naan-002-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           }
+//         ]
+//       }
+//     ]
+//   },
+//   {
+//     "name": "Burgers",
+//     "description": "Nos burgers maison",
+//     "sort_order": 1,
+//     "is_active": true,
+//     "id": "cat-burger-001",
+//     "created_at": "2026-02-01T10:00:00.000000",
+//     "updated_at": "2026-02-01T10:00:00.000000",
+//     "products": [
+//       {
+//         "name": "Cheese Burger",
+//         "description": "Steak haché, double cheddar",
+//         "price": 6.50,
+//         "is_active": true,
+//         "sort_order": 0,
+//         "id": "prod-burger-001",
+//         "category_id": "cat-burger-001",
+//         "image_url": "https://justcool.fr/assets/images/products/burgers/burger-cheese.webp",
+//         "created_at": "2026-02-01T10:00:00.000000",
+//         "updated_at": "2026-02-01T10:00:00.000000",
+//         "supplement_groups": [
+//           {
+//             "name": "Choisissez vos crudités",
+//             "description": "",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 1,
+//             "sort_order": 0,
+//             "id": "grp-b001-crudites",
+//             "product_id": "prod-burger-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Aucune crudité", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-b1-001", "group_id": "grp-b001-crudites", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Toutes les crudités", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-b1-002", "group_id": "grp-b001-crudites", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           },
+//           {
+//             "name": "Choisissez vos sauces",
+//             "description": "Max 2",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 2,
+//             "sort_order": 1,
+//             "id": "grp-b001-sauces",
+//             "product_id": "prod-burger-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Biggy burger", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-b1-s01", "group_id": "grp-b001-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Ketchup", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-b1-s02", "group_id": "grp-b001-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Mayonnaise", "price": 0.0, "is_active": true, "sort_order": 2, "id": "sup-b1-s03", "group_id": "grp-b001-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Barbecue", "price": 0.0, "is_active": true, "sort_order": 3, "id": "sup-b1-s04", "group_id": "grp-b001-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           },
+//           {
+//             "name": "Menu",
+//             "description": "",
+//             "is_required": false,
+//             "min_selection": 0,
+//             "max_selection": 1,
+//             "sort_order": 2,
+//             "id": "grp-b001-menu",
+//             "product_id": "prod-burger-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Ajoutez la formule menu (frites + boisson)", "price": 2.0, "is_active": true, "sort_order": 0, "id": "sup-b1-m01", "group_id": "grp-b001-menu", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           },
+//           {
+//             "name": "Ajoutez vos suppléments",
+//             "description": "",
+//             "is_required": false,
+//             "min_selection": 0,
+//             "max_selection": 7,
+//             "sort_order": 3,
+//             "id": "grp-b001-supps",
+//             "product_id": "prod-burger-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Bacon", "price": 2.0, "is_active": true, "sort_order": 0, "id": "sup-b1-sp01", "group_id": "grp-b001-supps", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Oeuf au plat", "price": 2.0, "is_active": true, "sort_order": 1, "id": "sup-b1-sp02", "group_id": "grp-b001-supps", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Oignon grillé", "price": 2.0, "is_active": true, "sort_order": 2, "id": "sup-b1-sp03", "group_id": "grp-b001-supps", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Raclette", "price": 2.0, "is_active": true, "sort_order": 3, "id": "sup-b1-sp04", "group_id": "grp-b001-supps", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           }
+//         ]
+//       },
+//       {
+//         "name": "Burger Bacon",
+//         "description": "Steak haché, bacon croustillant, cheddar",
+//         "price": 8.50,
+//         "is_active": true,
+//         "sort_order": 1,
+//         "id": "prod-burger-002",
+//         "category_id": "cat-burger-001",
+//         "image_url": "https://justcool.fr/assets/images/products/burgers/burger-bacon.webp",
+//         "created_at": "2026-02-01T10:00:00.000000",
+//         "updated_at": "2026-02-01T10:00:00.000000",
+//         "supplement_groups": [
+//           {
+//             "name": "Choisissez vos crudités",
+//             "description": "",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 1,
+//             "sort_order": 0,
+//             "id": "grp-b002-crudites",
+//             "product_id": "prod-burger-002",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Aucune crudité", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-b2-001", "group_id": "grp-b002-crudites", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Toutes les crudités", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-b2-002", "group_id": "grp-b002-crudites", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           },
+//           {
+//             "name": "Choisissez vos sauces",
+//             "description": "Max 2",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 2,
+//             "sort_order": 1,
+//             "id": "grp-b002-sauces",
+//             "product_id": "prod-burger-002",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Biggy burger", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-b2-s01", "group_id": "grp-b002-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Barbecue", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-b2-s02", "group_id": "grp-b002-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Andalouse", "price": 0.0, "is_active": true, "sort_order": 2, "id": "sup-b2-s03", "group_id": "grp-b002-sauces", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           }
+//         ]
+//       }
+//     ]
+//   },
+//   {
+//     "name": "Desserts",
+//     "description": "Nos desserts faits maison",
+//     "sort_order": 2,
+//     "is_active": true,
+//     "id": "cat-dessert-001",
+//     "created_at": "2026-02-01T10:00:00.000000",
+//     "updated_at": "2026-02-01T10:00:00.000000",
+//     "products": [
+//       {
+//         "name": "Churros",
+//         "description": "Churros maison à la cannelle",
+//         "price": 3.50,
+//         "is_active": true,
+//         "sort_order": 0,
+//         "id": "prod-dessert-001",
+//         "category_id": "cat-dessert-001",
+//         "image_url": "https://justcool.fr/assets/images/products/desserts/churros.webp",
+//         "created_at": "2026-02-01T10:00:00.000000",
+//         "updated_at": "2026-02-01T10:00:00.000000",
+//         "supplement_groups": []
+//       },
+//       {
+//         "name": "Brownie",
+//         "description": "Brownie chocolat fondant",
+//         "price": 3.00,
+//         "is_active": true,
+//         "sort_order": 1,
+//         "id": "prod-dessert-002",
+//         "category_id": "cat-dessert-001",
+//         "image_url": "https://justcool.fr/assets/images/products/desserts/brownie.webp",
+//         "created_at": "2026-02-01T10:00:00.000000",
+//         "updated_at": "2026-02-01T10:00:00.000000",
+//         "supplement_groups": []
+//       }
+//     ]
+//   },
+//   {
+//     "name": "Boissons",
+//     "description": "Nos boissons fraîches",
+//     "sort_order": 3,
+//     "is_active": true,
+//     "id": "cat-boisson-001",
+//     "created_at": "2026-02-01T10:00:00.000000",
+//     "updated_at": "2026-02-01T10:00:00.000000",
+//     "products": [
+//       {
+//         "name": "Boisson 33cl",
+//         "description": "Coca-Cola, Fanta, Sprite, Ice Tea",
+//         "price": 2.00,
+//         "is_active": true,
+//         "sort_order": 0,
+//         "id": "prod-boisson-001",
+//         "category_id": "cat-boisson-001",
+//         "image_url": "https://justcool.fr/assets/images/products/boissons/boisson-33cl.webp",
+//         "created_at": "2026-02-01T10:00:00.000000",
+//         "updated_at": "2026-02-01T10:00:00.000000",
+//         "supplement_groups": [
+//           {
+//             "name": "Choisissez votre saveur",
+//             "description": "",
+//             "is_required": true,
+//             "min_selection": 1,
+//             "max_selection": 1,
+//             "sort_order": 0,
+//             "id": "grp-bv001-saveur",
+//             "product_id": "prod-boisson-001",
+//             "created_at": "2026-02-01T10:00:00.000000",
+//             "updated_at": "2026-02-01T10:00:00.000000",
+//             "supplements": [
+//               { "name": "Coca-Cola", "price": 0.0, "is_active": true, "sort_order": 0, "id": "sup-bv-001", "group_id": "grp-bv001-saveur", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Fanta", "price": 0.0, "is_active": true, "sort_order": 1, "id": "sup-bv-002", "group_id": "grp-bv001-saveur", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Sprite", "price": 0.0, "is_active": true, "sort_order": 2, "id": "sup-bv-003", "group_id": "grp-bv001-saveur", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" },
+//               { "name": "Ice Tea", "price": 0.0, "is_active": true, "sort_order": 3, "id": "sup-bv-004", "group_id": "grp-bv001-saveur", "image_url": null, "created_at": "2026-02-01T10:00:00.000000", "updated_at": "2026-02-01T10:00:00.000000" }
+//             ]
+//           }
+//         ]
+//       }
+//     ]
+//   },
+//   {
+//     "name": "Catégorie inactive",
+//     "description": "Cette catégorie ne doit pas apparaître",
+//     "sort_order": 99,
+//     "is_active": false,
+//     "id": "cat-hidden-001",
+//     "created_at": "2026-02-01T10:00:00.000000",
+//     "updated_at": "2026-02-01T10:00:00.000000",
+//     "products": []
+//   }
+// ]
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data: ApiCategory[] =await res.json();
+        if (cancelled) return;
+        const mapped = mapCategories(data);
+        setSections(mapped);
+        if (mapped.length > 0) setActiveCategory(mapped[0].categoryId);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Erreur de chargement");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchData();
+    return () => { cancelled = true; };
+  }, []);
+
   // ── IntersectionObserver ────────────────────────────────────────────────────
   useEffect(() => {
+    if (sections.length === 0) return;
     const observers: IntersectionObserver[] = [];
-    SECTIONS.forEach(({ categoryId }) => {
+    sections.forEach(({ categoryId }) => {
       const el = document.getElementById(categoryId);
       if (!el) return;
       const observer = new IntersectionObserver(
@@ -184,7 +577,7 @@ export default function JustCool() {
       observers.push(observer);
     });
     return () => observers.forEach((o) => o.disconnect());
-  }, []);
+  }, [sections]);
 
   // ── Category nav click ──────────────────────────────────────────────────────
   const handleCategorySelect = useCallback((id: string) => {
@@ -237,7 +630,7 @@ export default function JustCool() {
       return [...prev, newItem];
     });
 
-    setCartOpen(true);   // auto-open cart drawer after adding
+    setCartOpen(true);
   };
 
   const handleUpdateQty = (id: string, qty: number) => {
@@ -248,6 +641,7 @@ export default function JustCool() {
     setCartItems((prev) => prev.filter((i) => i.id !== id));
   };
 
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-black text-white">
       <Header
@@ -257,21 +651,57 @@ export default function JustCool() {
 
       <main>
         <Hero />
-        <CategoryNav
-          activeId={activeCategory}
-          onSelect={handleCategorySelect}
-          topOffset="3.75rem"
-        />
 
-        {SECTIONS.map(({ categoryId, categoryLabel, products }) => (
-          <CategorySection
-            key={categoryId}
-            categoryId={categoryId}
-            categoryLabel={categoryLabel}
-            products={products}
-            onProductClick={openModal}
-          />
-        ))}
+        {loading && (
+          <div className="flex items-center justify-center py-32 text-gray-400">
+            <svg className="animate-spin h-8 w-8 mr-3" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            Chargement du menu…
+          </div>
+        )}
+
+        {error && (
+          <div className="flex flex-col items-center justify-center py-32 text-red-400 gap-4">
+            <p className="text-lg font-semibold">Impossible de charger le menu</p>
+            <p className="text-sm text-gray-500">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 px-6 py-2 bg-red-600 hover:bg-red-500 text-white rounded-full text-sm transition"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && sections.length > 0 && (
+          <>
+            <CategoryNav
+              activeId={activeCategory}
+              onSelect={handleCategorySelect}
+              topOffset="3.75rem"
+              // Pass dynamic categories so the nav reflects the API data
+              categories={
+                sections.map((s) => ({
+                  id: s.categoryId,
+                  label: s.categoryLabel,
+                }))
+              }
+             
+            />
+
+            {sections.map(({ categoryId, categoryLabel, products }) => (
+              <CategorySection
+                key={categoryId}
+                categoryId={categoryId}
+                categoryLabel={categoryLabel}
+                products={products}
+                onProductClick={openModal}
+              />
+            ))}
+          </>
+        )}
       </main>
 
       <Footer />

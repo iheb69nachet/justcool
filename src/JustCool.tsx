@@ -115,7 +115,7 @@ function mapCategories(apiCategories: ApiCategory[]) {
 }
 
 const STICKY_OFFSET = 60 + 48;
-const API_URL = "http://15.235.197.224:5050/menu/justcool/categories";
+const API_URL = "https://resto.devsolve-agency.com:8443/menu/justcool/categories";
 
 // ─── Cart helpers ──────────────────────────────────────────────────────────────
 

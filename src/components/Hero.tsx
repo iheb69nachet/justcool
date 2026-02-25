@@ -20,7 +20,6 @@ export default function Hero() {
 
       {/* Content */}
       <div className="relative z-20 text-center max-w-3xl mx-auto space-y-6 pt-24 pb-8 px-4 sm:px-6">
-
         {/* Location badge */}
         <span className="inline-block py-1 px-3 rounded-full bg-red-600/10 border border-red-600/20 text-red-500 font-medium text-sm mb-4 backdrop-blur-sm">
           <span aria-hidden="true">📍</span> 2 Bd Riquier, Nice
@@ -41,7 +40,7 @@ export default function Hero() {
           </span>
           <span
             aria-hidden="true"
-            className="block text-red-600 font-extrabold mt-2 uppercase tracking-wide"
+            className="block text-red-600 font-extrabold mt-2 uppercase tracking-wide font-zamenhof-inverse"
             style={{ textShadow: "rgba(220, 38, 38, 0.4) 0px 0px 30px" }}
           >
             NAAN CHEESE &amp; TACOS
@@ -55,11 +54,12 @@ export default function Hero() {
         >
           <span aria-hidden="true">
             Envie d&apos;un fast-food qui a du goût ? Découvrez nos{" "}
-            <strong className="text-white">Naan Burgers faits maison</strong>, cuits
-            minute au <strong className="text-white">Tandoor traditionnel</strong>.
-            Situé au cœur de Nice Riquier,{" "}
-            <span className="font-bold text-white">Just Cool</span> réinvente le snack
-            Halal avec des produits frais, généreux et certifiés.
+            <strong className="text-white">Naan Burgers faits maison</strong>,
+            cuits minute au{" "}
+            <strong className="text-white">Tandoor traditionnel</strong>. Situé
+            au cœur de Nice Riquier,{" "}
+            <span className="font-bold text-white">Just Cool</span> réinvente le
+            snack Halal avec des produits frais, généreux et certifiés.
           </span>
         </p>
 

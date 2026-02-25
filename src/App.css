@@ -1,0 +1,90 @@
+@font-face {
+  font-family: "Zamenhof Inverse";
+  src: url("/public/fonts/Zamenhof Inverse.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FramerSans";
+  src: url("/public/fonts/FramerSans100.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FramerSans";
+  src: url("/public/fonts/FramerSans200.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FramerSans";
+  src: url("/public/fonts/FramerSans300.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FramerSans";
+  src: url("/public/fonts/FramerSans400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FramerSans";
+  src: url("/public/fonts/FramerSans500.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FramerSans";
+  src: url("/public/fonts/FramerSans600.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "FramerSans";
+  src: url("/public/fonts/FramerSans700.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/public/fonts/LucidaHandwritingStdThin.TTF") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/public/fonts/LucidaHandwritingStdLight.TTF") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/public/fonts/LucidaHandwritingStdRg.TTF") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/public/fonts/LucidaHandwritingStdBold.TTF") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/public/fonts/LucidaHandwritingStdBlack.TTF") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}

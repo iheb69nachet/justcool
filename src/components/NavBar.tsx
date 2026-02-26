@@ -206,7 +206,7 @@ export default function Header({
               <a href="/#nav-categories" className="desktop-nav-link">
                 Notre Menu
               </a>
-              <a href="/a-propos" className="desktop-nav-link">
+              <a href="/about" className="desktop-nav-link">
                 À propos de nous
               </a>
             </nav>

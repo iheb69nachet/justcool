@@ -64,7 +64,7 @@ function ProductCard({ product, onClick }: { product: Product; onClick?: (p: Pro
         <img
           alt=""
           loading="lazy"
-          src={imageSrc}
+          src={"https://resto.devsolve-agency.com:8443/"+imageSrc}
           className="absolute inset-0 w-full h-full object-contain transition-transform duration-500 group-hover:scale-105"
           style={{ background: "radial-gradient(circle farthest-side, #555 -80px, #1a1a1a)" }}
         />

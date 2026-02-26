@@ -131,7 +131,8 @@ function ImageOption({
         disabled:opacity-40 disabled:cursor-not-allowed`}
     >
       <div className="w-[60px] h-[60px] shrink-0 rounded-full overflow-hidden bg-black/20 relative">
-        <img alt={label} loading="lazy" src={imageSrc}
+        <img alt={label} loading="lazy"           src={"https://resto.devsolve-agency.com:8443/"+imageSrc}
+
           className="absolute inset-0 w-full h-full object-contain p-2" />
       </div>
       <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
@@ -359,12 +360,26 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
       return;
     }
 
-    const allSelectedIds = Object.values(groupSelections).flat();
+    // Build human-readable supplement names instead of raw UUIDs
+    const allSelectedNames: string[] = [];
+    const namedGroupSelections: Record<string, string[]> = {};
+
+    supplementGroups.forEach((g) => {
+      const selectedIds = groupSelections[g.id] ?? [];
+      const selectedNames = selectedIds.map((id) => {
+        const sup = g.supplements.find((s) => s.id === id);
+        return sup ? sup.name.trim() : id;
+      });
+      if (selectedNames.length > 0) {
+        namedGroupSelections[g.name] = selectedNames;
+        allSelectedNames.push(...selectedNames);
+      }
+    });
+
     onAddToCart(product, quantity, {
-      // Legacy fields kept so callers don't need changes
       crudites: [], bread: "", sauces: [], menuFormule: false, isStudent: false,
-      supplements: allSelectedIds,
-      groupSelections,
+      supplements: allSelectedNames,
+      groupSelections: namedGroupSelections as any,
     });
     onClose();
   };
@@ -452,7 +467,8 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-black">
                   <img
                     alt={product.name}
-                    src={product.imageSrc}
+          src={"https://resto.devsolve-agency.com:8443/"+product.imageSrc}
+
                     className="absolute inset-0 w-full h-full object-contain"
                     style={{ background: "radial-gradient(circle farthest-side, #444 -80px, #111)" }}
                   />

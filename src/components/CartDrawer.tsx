@@ -92,9 +92,22 @@ function buildOptionSummary(options: CartItem["options"]): string[] {
   if (options.bread) lines.push(`Pain: ${options.bread}`);
   if (options.sauces?.length) lines.push(`Sauce${options.sauces.length > 1 ? "s" : ""}: ${options.sauces.join(", ")}`);
   if (options.crudites?.length) lines.push(`Crudités: ${options.crudites.join(", ")}`);
-  if (options.supplements?.length) lines.push(`Supp.: ${options.supplements.join(", ")}`);
   if (options.menuFormule) lines.push("Formule menu");
   if (options.isStudent) lines.push("Tarif étudiant");
+
+  // Named group selections: { "Cuisson": ["Saignant"], "Sauce": ["BBQ", "Ketchup"] }
+  const gs = options.groupSelections as Record<string, string[]> | undefined;
+  if (gs && Object.keys(gs).length > 0) {
+    Object.entries(gs).forEach(([groupName, items]) => {
+      if (Array.isArray(items) && items.length) {
+        lines.push(`${groupName}: ${items.join(", ")}`);
+      }
+    });
+  } else if (options.supplements?.length) {
+    // Fallback for older cart entries
+    lines.push(`Suppléments: ${options.supplements.join(", ")}`);
+  }
+
   return lines;
 }
 

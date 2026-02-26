@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import FloatingMenu from "./FloatingMenu";
 
 const ShoppingBagIcon = ({ size = 28 }) => (
   <svg
@@ -272,6 +273,7 @@ export default function Header({
             </a>
           </div>
         </div>
+        <FloatingMenu/>
       </header>
     </>
   );

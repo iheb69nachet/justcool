@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+@theme {
+  --font-zamenhof-inverse: "Zamenhof Inverse", sans-serif;
+  --font-framer-sans: "FramerSans", sans-serif;
+  --font-lucida: "Lucida Handwriting", cursive;
+}
+
+@layer base {
+  html, body {
+    font-family: var(--font-framer-sans);
+  }
+}

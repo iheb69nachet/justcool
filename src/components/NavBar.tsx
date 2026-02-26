@@ -19,8 +19,17 @@ const ShoppingBagIcon = ({ size = 28 }) => (
 );
 
 const MenuIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-    fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M4 5h16" />
     <path d="M4 12h16" />
     <path d="M4 19h16" />
@@ -28,14 +37,29 @@ const MenuIcon = () => (
 );
 
 const CloseIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-    fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M18 6L6 18" />
     <path d="M6 6l12 12" />
   </svg>
 );
 
-export default function Header({ cartCount = 0, onCartClick }: { cartCount?: number; onCartClick?: () => void }) {
+export default function Header({
+  cartCount = 0,
+  onCartClick,
+}: {
+  cartCount?: number;
+  onCartClick?: () => void;
+}) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -113,20 +137,7 @@ export default function Header({ cartCount = 0, onCartClick }: { cartCount?: num
           transform: translateY(-1px);
         }
         .commander-btn:active { transform: translateY(0); }
-        .menu-toggle {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 2.75rem;
-          height: 2.75rem;
-          border-radius: 8px;
-          background: transparent;
-          border: none;
-          color: #fff;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        .menu-toggle:hover { background: rgba(255,255,255,0.07); }
+      
         .cart-btn {
           position: relative;
           padding: 0.5rem;
@@ -161,7 +172,7 @@ export default function Header({ cartCount = 0, onCartClick }: { cartCount?: num
       <header className="sticky top-0 z-[100] w-full flex flex-col bg-black">
         {/* Main bar */}
         <div
-          className="relative w-full bg-black border-b-2 border-red-600 flex items-center gap-2 sm:gap-4 px-3 sm:px-6"
+          className="relative bg-gradient-to-r from-black via-gray-900 to-black w-full bg-black border-b-2 border-red-600 flex items-center gap-2 sm:gap-4 px-3 sm:px-6"
           style={{ height: "3.75rem" }}
         >
           {/* Logo */}
@@ -176,7 +187,7 @@ export default function Header({ cartCount = 0, onCartClick }: { cartCount?: num
               style={{ height: "3.2rem", width: "3.2rem" }}
               className="object-contain"
             />
-            <p className="font-bold text-white text-2xl sm:text-3xl flex leading-none">
+            <p className="font-bold text-white text-2xl sm:text-3xl flex leading-none font-zamenhof-inverse">
               <span>JUST</span>
               <span className="text-red-500 ml-1">COOL</span>
             </p>
@@ -190,15 +201,21 @@ export default function Header({ cartCount = 0, onCartClick }: { cartCount?: num
 
           {/* Right side */}
           <div className="ml-auto flex items-center gap-3 sm:gap-5">
-
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-6">
-              <a href="/#nav-categories" className="desktop-nav-link">Notre Menu</a>
-              <a href="/a-propos" className="desktop-nav-link">À propos de nous</a>
+              <a href="/#nav-categories" className="desktop-nav-link">
+                Notre Menu
+              </a>
+              <a href="/a-propos" className="desktop-nav-link">
+                À propos de nous
+              </a>
             </nav>
 
             {/* Commander — desktop */}
-            <a href="/#nav-categories" className="commander-btn hidden md:inline-flex items-center">
+            <a
+              href="/#nav-categories"
+              className="commander-btn hidden md:inline-flex items-center"
+            >
               Commander
             </a>
 
@@ -209,16 +226,14 @@ export default function Header({ cartCount = 0, onCartClick }: { cartCount?: num
               onClick={onCartClick}
             >
               <ShoppingBagIcon size={24} />
-              {cartCount > 0 && (
-                <span className="cart-badge">{cartCount}</span>
-              )}
+              {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
             </button>
 
             {/* Mobile menu toggle */}
             <button
               aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
               aria-expanded={mobileOpen}
-              className="menu-toggle md:hidden"
+              className="flex items-center justify-center w-11 h-11 rounded-lg bg-transparent border-none text-white cursor-pointer transition-colors duration-200 hover:bg-white/10 sm:hidden"
               onClick={() => setMobileOpen((v) => !v)}
             >
               {mobileOpen ? <CloseIcon /> : <MenuIcon />}

@@ -6,7 +6,7 @@ export interface CartItem {
   id: string;          // unique cart line id (product id + options hash)
   productId: string;
   name: string;
-  price: number;       // unit price already factoring menu/student
+  price: number;       // unit price = base price + supplementSurcharge
   quantity: number;
   options: {
     bread?: string;
@@ -15,6 +15,8 @@ export interface CartItem {
     menuFormule?: boolean;
     isStudent?: boolean;
     supplements?: string[];
+    groupSelections?: Record<string, string[]>;
+    supplementSurcharge?: number; // ← per-unit surcharge baked into price
   };
 }
 
@@ -95,8 +97,8 @@ function buildOptionSummary(options: CartItem["options"]): string[] {
   if (options.menuFormule) lines.push("Formule menu");
   if (options.isStudent) lines.push("Tarif étudiant");
 
-  // Named group selections: { "Cuisson": ["Saignant"], "Sauce": ["BBQ", "Ketchup"] }
-  const gs = options.groupSelections as Record<string, string[]> | undefined;
+  // Named group selections
+  const gs = options.groupSelections;
   if (gs && Object.keys(gs).length > 0) {
     Object.entries(gs).forEach(([groupName, items]) => {
       if (Array.isArray(items) && items.length) {
@@ -104,7 +106,6 @@ function buildOptionSummary(options: CartItem["options"]): string[] {
       }
     });
   } else if (options.supplements?.length) {
-    // Fallback for older cart entries
     lines.push(`Suppléments: ${options.supplements.join(", ")}`);
   }
 
@@ -139,7 +140,6 @@ export default function CartDrawer({
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const isEmpty = items.length === 0;
 
-  // Lock body scroll when open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -149,7 +149,6 @@ export default function CartDrawer({
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
-  // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -157,7 +156,7 @@ export default function CartDrawer({
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
-  const waNumber = "33497125303"; // French number format for WA
+  const waNumber = "33497125303";
   const waMsg = buildWhatsAppMessage(items, dineMode);
   const waUrl = `https://wa.me/${waNumber}?text=${waMsg}`;
 
@@ -186,7 +185,7 @@ export default function CartDrawer({
           z-index: 150;
           height: 100%;
           width: 100%;
-          max-width: 28rem; /* sm:max-w-md */
+          max-width: 28rem;
           display: flex;
           flex-direction: column;
           background: rgba(0,0,0,0.65);
@@ -373,9 +372,8 @@ export default function CartDrawer({
       >
         {/* Header */}
         <div
-          style={{ position: "relative" }}
+          style={{ position: "relative", background: "rgba(255,255,255,0.04)" }}
           className="flex flex-col gap-1 p-4 border-b border-white/10"
-          style={{ background: "rgba(255,255,255,0.04)" }}
         >
           <div className="flex items-center gap-2" id="cart-title">
             <span className="text-red-500"><BagIcon /></span>

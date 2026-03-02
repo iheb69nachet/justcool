@@ -55,7 +55,7 @@ export default function Hero() {
           </span>
           <span
             aria-hidden="true"
-            className="block text-red-600 font-extrabold mt-2 uppercase tracking-wide font-zamenhof-inverse"
+            className="block text-red-600 font-extrabold mt-2 uppercase tracking-wide font-framer-sans"
             style={{ textShadow: "#e45835 0px 0px 30px" }}
           >
             font notre renommée

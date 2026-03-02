@@ -6,20 +6,20 @@
 }
 
 @font-face {
-  font-family: "FramerSans";
+  font-family: "Framer Sans";
   src: url("/public/fonts/FramerSans100.ttf") format("truetype");
-  font-weight: 100;
+  font-weight: normal;
   font-style: normal;
 }
 
-@font-face {
+/* @font-face {
   font-family: "FramerSans";
   src: url("/public/fonts/FramerSans200.ttf") format("truetype");
   font-weight: 200;
   font-style: normal;
-}
+} */
 
-@font-face {
+/* @font-face {
   font-family: "FramerSans";
   src: url("/public/fonts/FramerSans300.ttf") format("truetype");
   font-weight: 300;
@@ -31,9 +31,9 @@
   src: url("/public/fonts/FramerSans400.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
-}
+} */
 
-@font-face {
+/* @font-face {
   font-family: "FramerSans";
   src: url("/public/fonts/FramerSans500.ttf") format("truetype");
   font-weight: 500;
@@ -52,7 +52,7 @@
   src: url("/public/fonts/FramerSans700.ttf") format("truetype");
   font-weight: 700;
   font-style: normal;
-}
+} */
 
 @font-face {
   font-family: "Lucida Handwriting";

@@ -33,6 +33,7 @@ interface OrderOptions {
   isStudent: boolean;
   supplements: string[];
   groupSelections: Record<string, string[]>;
+  supplementSurcharge: number; // ← NEW: per-unit surcharge from supplements
 }
 
 interface ProductModalProps {
@@ -131,8 +132,8 @@ function ImageOption({
         disabled:opacity-40 disabled:cursor-not-allowed`}
     >
       <div className="w-[60px] h-[60px] shrink-0 rounded-full overflow-hidden bg-black/20 relative">
-        <img alt={label} loading="lazy"           src={"https://resto.devsolve-agency.com:8443/"+imageSrc}
-
+        <img alt={label} loading="lazy"
+          src={"https://resto.devsolve-agency.com:8443/" + imageSrc}
           className="absolute inset-0 w-full h-full object-contain p-2" />
       </div>
       <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
@@ -158,7 +159,7 @@ function isSpicyName(name: string) {
   return SPICY_KEYWORDS.some((k) => lower.includes(k));
 }
 
-// ─── GroupSection: renders one supplement group dynamically ───────────────────
+// ─── GroupSection ─────────────────────────────────────────────────────────────
 
 interface GroupSectionProps {
   group: ApiSupplementGroup;
@@ -175,7 +176,6 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
 
   const toggle = (supId: string) => {
     if (isRadio) {
-      // Radio — clicking the current selection clears it unless required
       const alreadySelected = selected.includes(supId);
       onChange(group.id, alreadySelected && !group.is_required ? [] : [supId]);
     } else {
@@ -198,7 +198,6 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
       id={sectionId}
       className={`p-3 -mx-3 rounded-xl transition-all ${hasError ? "section-error" : ""}`}
     >
-      {/* ── Legend ── */}
       <div className="flex items-center gap-2 mb-4 flex-wrap">
         <span className={`font-bold uppercase tracking-widest text-sm transition-colors ${hasError ? "text-red-400" : "text-white"}`}>
           {group.name}
@@ -229,7 +228,6 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
         )}
       </div>
 
-      {/* ── Inline error ── */}
       {hasError && (
         <div className="mb-3">
           <ErrorBanner
@@ -238,7 +236,6 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
         </div>
       )}
 
-      {/* ── Options — image cards or text chips ── */}
       {hasImages ? (
         <div className="grid grid-cols-2 gap-1.5">
           {activeSupplements.map((sup) => (
@@ -279,20 +276,12 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
 
 export default function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductModalProps) {
   const [quantity, setQuantity] = useState(1);
-
-  /**
-   * One entry per group: groupId → array of selected supplement ids.
-   * Replaces all the old hardcoded crudites / bread / sauces / supplements state.
-   */
   const [groupSelections, setGroupSelections] = useState<Record<string, string[]>>({});
-
-  /** Group ids whose required-validation failed */
   const [errors, setErrors] = useState<Set<string>>(new Set());
 
   const scrollRef      = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Pull supplement groups off the product (attached in JustCool.tsx mapProduct())
   const supplementGroups: ApiSupplementGroup[] =
     (product as any)?.supplementGroups ?? [];
 
@@ -337,6 +326,21 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
     setGroupSelections((prev) => ({ ...prev, [groupId]: newSelected }));
   }, []);
 
+  // ── Per-unit supplement surcharge ─────────────────────────────────────────
+  const supplementSurcharge = (() => {
+    let extra = 0;
+    supplementGroups.forEach((g) => {
+      (groupSelections[g.id] ?? []).forEach((supId) => {
+        const sup = g.supplements.find((s) => s.id === supId);
+        if (sup) extra += sup.price;
+      });
+    });
+    return extra;
+  })();
+
+  // ── Total price shown in modal (base + supplements) × quantity ────────────
+  const totalPrice = product ? (product.price + supplementSurcharge) * quantity : 0;
+
   // ── Validation + scroll-to-error ──────────────────────────────────────────
   const handleAdd = () => {
     if (!product) return;
@@ -360,7 +364,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
       return;
     }
 
-    // Build human-readable supplement names instead of raw UUIDs
+    // Build human-readable supplement names
     const allSelectedNames: string[] = [];
     const namedGroupSelections: Record<string, string[]> = {};
 
@@ -377,25 +381,17 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
     });
 
     onAddToCart(product, quantity, {
-      crudites: [], bread: "", sauces: [], menuFormule: false, isStudent: false,
+      crudites: [],
+      bread: "",
+      sauces: [],
+      menuFormule: false,
+      isStudent: false,
       supplements: allSelectedNames,
-      groupSelections: namedGroupSelections as any,
+      groupSelections: namedGroupSelections,
+      supplementSurcharge, // ← per-unit surcharge passed to parent
     });
     onClose();
   };
-
-  // ── Total price (base + per-quantity supplement prices) ───────────────────
-  const totalPrice = (() => {
-    if (!product) return 0;
-    let total = product.price * quantity;
-    supplementGroups.forEach((g) => {
-      (groupSelections[g.id] ?? []).forEach((supId) => {
-        const sup = g.supplements.find((s) => s.id === supId);
-        if (sup) total += sup.price * quantity;
-      });
-    });
-    return total;
-  })();
 
   if (!isOpen || !product) return null;
 
@@ -467,8 +463,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-black">
                   <img
                     alt={product.name}
-          src={"https://resto.devsolve-agency.com:8443/"+product.imageSrc}
-
+                    src={"https://resto.devsolve-agency.com:8443/" + product.imageSrc}
                     className="absolute inset-0 w-full h-full object-contain"
                     style={{ background: "radial-gradient(circle farthest-side, #444 -80px, #111)" }}
                   />

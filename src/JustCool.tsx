@@ -18,6 +18,8 @@ interface OrderOptions {
   menuFormule: boolean;
   isStudent: boolean;
   supplements: string[];
+  groupSelections: Record<string, string[]>;
+  supplementSurcharge: number;
 }
 
 // ─── API Types ────────────────────────────────────────────────────────────────
@@ -136,6 +138,7 @@ function calcUnitPrice(product: Product, options: OrderOptions): number {
   let price = product.price;
   if (options.menuFormule && product.menuUpcharge) price += product.menuUpcharge;
   if (options.isStudent && product.studentDiscount) price -= product.studentDiscount;
+  price += options.supplementSurcharge ?? 0; // ← add supplement costs
   return Math.max(0, price);
 }
 
@@ -625,6 +628,8 @@ export default function JustCool() {
           menuFormule: options.menuFormule,
           isStudent: options.isStudent,
           supplements: options.supplements,
+          groupSelections: options.groupSelections, // ← show selections in drawer
+          supplementSurcharge: options.supplementSurcharge,
         },
       };
       return [...prev, newItem];

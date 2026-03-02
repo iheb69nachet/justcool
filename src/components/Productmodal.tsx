@@ -126,7 +126,7 @@ function ImageOption({
       disabled={disabled && !selected}
       className={`relative flex items-center gap-1 h-[60px] rounded-full border pr-3 w-full overflow-hidden transition-all duration-200
         ${selected
-          ? "border-red-600 bg-red-600/15 shadow-[0_0_12px_rgba(204,30,39,0.3)]"
+          ? "border-[#E45835] bg-[#E45835]/15 shadow-[0_0_12px_rgba(228,88,53,0.3)]"
           : "border-white/20 bg-white/5 text-white/70 hover:bg-white/10 hover:border-white/40"
         }
         disabled:opacity-40 disabled:cursor-not-allowed`}
@@ -206,8 +206,8 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
         {group.is_required ? (
           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 transition-colors
             ${hasError
-              ? "border-red-400 bg-red-400/20 text-red-400"
-              : "border-red-500/50 bg-red-500/20 text-red-500"}`}>
+              ? "border-orange-500 bg-orange-500/20 text-orange-400"
+              : "border-orange-500 bg-orange-500/20 text-orange-400"}`}>
             Obligatoire
           </span>
         ) : (
@@ -218,10 +218,10 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
         )}
 
         {isMulti && (
-          <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-500 border border-red-500/30 font-black tracking-tighter">
-            MAX {group.max_selection}
-          </span>
-        )}
+  <span className="text-xs px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">
+    MAX {group.max_selection}
+  </span>
+)}
 
         {group.description && (
           <span className="text-white/35 text-xs italic">{group.description}</span>
@@ -262,7 +262,12 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
               />
               {isSpicyName(sup.name) && <FlameIcon />}
               {sup.price > 0 && (
-                <span className="text-white/40 text-xs">+{sup.price.toFixed(2)}€</span>
+                <span
+  className="text-xs font-semibold"
+  style={{ color: "#E45835" }}
+>
+  +{sup.price.toFixed(2)}€
+</span>
               )}
             </div>
           ))}
@@ -440,7 +445,8 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
         >
 
           {/* ── Header ── */}
-          <div className="flex items-center justify-between bg-red-600 px-4 py-3.5 shrink-0">
+          <div className="flex items-center justify-between px-4 py-3.5 shrink-0"
+            style={{ backgroundColor: "#E45835" }}>
             <h2 id="modal-title" className="text-white font-bold text-lg leading-tight pr-4">
               {product.name}
             </h2>
@@ -471,30 +477,17 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
               )}
 
               {/* Description */}
-              {(product.mainIngredient || product.extras) && (
-                <div className="space-y-1 px-1">
-                  {product.mainIngredient && (
-                    <p className="text-white/60 text-base leading-relaxed">{product.mainIngredient}</p>
-                  )}
-                  {product.extras && (
-                    <p className="text-white/40 text-xs flex items-center gap-1.5">
-                      <span className="font-bold text-red-500">+ / −</span>
-                      {product.extras}
-                    </p>
-                  )}
-                </div>
-              )}
+              
 
               {/* Price */}
               <div>
-                <div className="font-black text-red-600 text-3xl">{product.price.toFixed(2)}€</div>
-                <p className="text-white/40 text-xs italic mt-1">
-                  Allergènes : voir{" "}
-                  <a href="/allergenes" className="text-red-500 underline decoration-dotted underline-offset-2">
-                    tableau
-                  </a>{" "}
-                  ou en restaurant
-                </p>
+                <div
+                  className="font-black text-3xl"
+                  style={{ color: "#E45835" }}
+                >
+                  {product.price.toFixed(2)}€
+                </div>
+                
               </div>
 
               {/* ── Dynamic supplement groups ── */}
@@ -549,12 +542,14 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
               <button
                 onClick={handleAdd}
                 className="flex-1 flex items-center justify-between h-12 px-5 rounded-lg
-                  bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600
-                  text-white font-bold transition-all duration-300
-                  shadow-[0_0_20px_rgba(204,30,39,0.5)] hover:shadow-[0_0_30px_rgba(204,30,39,0.8)]
-                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                text-white font-bold transition-all duration-300
+                focus-visible:outline-none focus-visible:ring-2"
+                style={{
+                  background: "linear-gradient(135deg, #E45835, #cf3f1f)",
+                  boxShadow: "0 0 20px rgba(228,88,53,0.5)"
+                }}
               >
-                <span className="uppercase tracking-wider text-sm">Ajouter</span>
+                              <span className="uppercase tracking-wider text-sm">Ajouter</span>
                 <span className="font-black text-lg">{totalPrice.toFixed(2)}€</span>
               </button>
             </div>

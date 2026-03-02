@@ -55,7 +55,7 @@ export default function Footer() {
 
           {/* ── Column 1: Contact ── */}
           <div className="space-y-4">
-            <h3 className="font-bold text-white text-xl">Just Cool</h3>
+            <h3 className="font-bold text-white text-xl">Mange moi</h3>
 
             <address className="not-italic space-y-4">
               {/* Address */}
@@ -67,8 +67,8 @@ export default function Footer() {
               >
                 <MapPinIcon />
                 <div>
-                  <p>2 Bd de Riquier</p>
-                  <p>06300 Nice, France</p>
+                  <p>MANGE MOI – 30 Av. de la République, </p>
+                  <p>06300 Nice</p>
                 </div>
               </a>
 
@@ -76,22 +76,12 @@ export default function Footer() {
               <div className="flex items-center gap-3">
                 <PhoneIcon />
                 <a href="tel:0497125303" className={linkClass}>
-                  04 97 12 53 03
+                  04 93 07 68 70
                 </a>
               </div>
 
               {/* Instagram */}
-              <div className="flex items-center gap-3">
-                <InstagramIcon />
-                <a
-                  href="https://instagram.com/justcool.nice"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={linkClass}
-                >
-                  @justcool.nice
-                </a>
-              </div>
+              
             </address>
           </div>
 
@@ -104,15 +94,9 @@ export default function Footer() {
 
             <ul className="space-y-2 text-sm">
               <li className="flex justify-between gap-4">
-                <span className="text-zinc-400">Lundi – Samedi</span>
+                <span className="text-zinc-400">Tous les jours </span>
                 <time dateTime="Mo-Sa 11:00-00:30" className="font-bold text-white whitespace-nowrap">
-                  11:00 – 00:30
-                </time>
-              </li>
-              <li className="flex justify-between gap-4">
-                <span className="text-zinc-400">Dimanche</span>
-                <time dateTime="Su 12:00-00:30" className="font-bold text-white whitespace-nowrap">
-                  12:00 – 00:30
+                  11:00 – 23:00
                 </time>
               </li>
             </ul>
@@ -127,8 +111,7 @@ export default function Footer() {
                 { href: "/a-propos", label: "À propos", highlight: true },
                 { href: "/mentions-legales", label: "Mentions Légales" },
                 { href: "/cgv", label: "CGV" },
-                { href: "/politique-de-confidentialite", label: "Politique de confidentialité" },
-                { href: "/allergenes", label: "Allergènes" },
+            
               ].map(({ href, label, highlight }) => (
                 <li key={href}>
                   <a
@@ -145,19 +128,12 @@ export default function Footer() {
               ))}
 
               <li>
-                <button
-                  className={`${linkClass} text-left cursor-pointer bg-transparent border-none p-0`}
-                  onClick={() => {
-                    // Hook up your cookie consent manager here
-                  }}
-                >
-                  Gérer les cookies
-                </button>
+                
               </li>
 
               <li className="pt-4">
                 <span className="text-white/40 text-xs">
-                  © {currentYear} Just Cool. Tous droits réservés.
+                  © {currentYear} Mange moi . Tous droits réservés.
                 </span>
               </li>
             </ul>

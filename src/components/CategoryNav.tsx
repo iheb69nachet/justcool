@@ -123,8 +123,8 @@ export default function CategoryNav({
         }
 
         .cat-tab-active {
-          background: linear-gradient(135deg, #dc2626, #b91c1c);
-          border-color: #dc2626;
+          background: linear-gradient(135deg, #e45835, #e45835);
+          border-color: #e45835;
           color: #fff;
           box-shadow: 0 0 16px rgba(204, 30, 39, 0.4);
         }

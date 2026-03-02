@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import delicityLogo from "../assets/delicity.png";
+import deliverooLogo from "../assets/delivero.png";
+import ubereatsLogo from "../assets/ubereats.png";
 
 interface FloatingLink {
   label: string;
@@ -9,34 +12,39 @@ interface FloatingLink {
 
 const links: FloatingLink[] = [
   {
-    label: "Notre Menu",
-    href: "/",
-    color: "#ef4444",
+    label: "Delicity",
+    href: "https://TON-LIEN-DELICITY",
+    color: "#e4583500",
     icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 11l19-9-9 19-2-8-8-2z" />
-      </svg>
+      <img
+        src={delicityLogo}
+        alt="Delicity"
+        className="w-6 h-6 object-contain"
+      />
     ),
   },
   {
-    label: "Nous Trouver",
-    href: "https://www.google.com/maps/search/?api=1&query=Just+Cool+Nice+Riquier",
-    color: "#f97316",
+    label: "Deliveroo",
+    href: "https://TON-LIEN-DELIVEROO",
+    color: "#e4583500",
     icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
-        <circle cx="12" cy="10" r="3" />
-      </svg>
+      <img
+        src={deliverooLogo}
+        alt="Deliveroo"
+        className="w-6 h-6 object-contain"
+      />
     ),
   },
   {
-    label: "Commander",
-    href: "tel:+33000000000",
-    color: "#eab308",
+    label: "Uber Eats",
+    href: "https://TON-LIEN-UBER-EATS",
+    color: "#e4583500",
     icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-      </svg>
+      <img
+        src={ubereatsLogo}
+        alt="Uber Eats"
+        className="w-6 h-6 object-contain"
+      />
     ),
   },
 ];
@@ -129,31 +137,19 @@ export default function FloatingMenu() {
         )}
 
         {/* Main FAB */}
-        <button
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-          className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-2xl transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none ${!open ? "fab-pulse" : ""}`}
-          style={{
-            background: open
-              ? "linear-gradient(135deg, #1a1a1a, #2d2d2d)"
-              : "linear-gradient(135deg, #ef4444, #b91c1c)",
-            border: open ? "1px solid rgba(255,255,255,0.1)" : "none",
-          }}
-        >
-          <span className={open ? "fab-icon-open" : "fab-icon-close"} style={{ display: "inline-flex" }}>
-            {open ? (
-              /* X icon */
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6 6 18M6 6l12 12" />
-              </svg>
-            ) : (
-              /* Plus / spark icon */
-              <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4" />
-              </svg>
-            )}
-          </span>
-        </button>
+        {/* Main FAB */}
+<button
+  onClick={() => setOpen((v) => !v)}
+  aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+className="px-8 h-14 rounded-full flex items-center justify-center ..."  style={{
+    background: open ? "#cc4729" : "#E45835",
+    border: open ? "1px solid rgba(255,255,255,0.15)" : "none",
+  }}
+>
+  <span className="font-bold uppercase tracking-wider text-sm">
+    Commander
+  </span>
+</button>
       </div>
     </>
   );

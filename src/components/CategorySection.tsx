@@ -146,10 +146,7 @@ function ProductCard({
             <span className="font-bold">+{menuUpcharge}€</span> en menu{" "}
             <span>(frites + boisson)</span>
           </p>
-          <p className="text-white/40 text-xs whitespace-nowrap mb-2">
-            <span className="font-bold">-{studentDiscount}€</span> pour
-            étudiants
-          </p>
+        
           <span
             className="inline-flex items-center justify-center w-full
             h-9 rounded-full px-4 text-sm font-bold uppercase tracking-wider text-white
@@ -245,7 +242,7 @@ export default function CategorySection({
             className="uppercase text-[2.25rem] font-bold tracking-wider text-white font-zamenhof-inverse"
             style={{ textShadow: "rgb(255 255 255) 0px 0px 20px" }}
           >
-            Just
+            
           </span>
           <NeonText text={categoryLabel} />
           <span className="sr-only">{categoryLabel}</span>

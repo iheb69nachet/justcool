@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import FloatingMenu from "./FloatingMenu";
+import logoMangeMoi from "../assets/logomangemoi.png";
 
 const ShoppingBagIcon = ({ size = 28 }) => (
   <svg
@@ -119,7 +120,8 @@ export default function Header({
         .desktop-nav-link:hover { color: #fff; }
         .desktop-nav-link:hover::after { width: 100%; }
         .commander-btn {
-          background: linear-gradient(135deg, #dc2626, #b91c1c);
+          background: linear-gradient(135deg, 
+          #E45835, #E45835);
           color: #fff;
           font-weight: 700;
           font-size: 0.875rem;
@@ -133,7 +135,7 @@ export default function Header({
           white-space: nowrap;
         }
         .commander-btn:hover {
-          background: linear-gradient(135deg, #ef4444, #dc2626);
+          background: linear-gradient(135deg, #ef4444, #E45835);
           box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
           transform: translateY(-1px);
         }
@@ -173,30 +175,20 @@ export default function Header({
       <header className="sticky top-0 z-[100] w-full flex flex-col bg-black">
         {/* Main bar */}
         <div
-          className="relative bg-gradient-to-r from-black via-gray-900 to-black w-full bg-black border-b-2 border-red-600 flex items-center gap-2 sm:gap-4 px-3 sm:px-6"
+          className="relative bg-gradient-to-r from-black via-gray-900 to-black w-full bg-black border-b-2 border-[#E45835] flex items-center gap-2 sm:gap-4 px-3 sm:px-6"
           style={{ height: "3.75rem" }}
         >
           {/* Logo */}
           <a
             href="/"
-            aria-label="Accueil Just Cool - Restaurant Halal Nice"
+            aria-label="Mange moi - Restaurant Halal Nice"
             className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity flex-shrink-0"
           >
             <img
-              src="https://justcool.fr/assets/images/logo_just-cool_no-bg.svg"
-              alt="Logo Just Cool"
-              style={{ height: "3.2rem", width: "3.2rem" }}
+              src={logoMangeMoi}
+              alt="Mange moi"
+              style={{ height: "4.5rem", width: "3.3rem" }}
               className="object-contain"
-            />
-            <p className="font-bold text-white text-2xl sm:text-3xl flex leading-none font-zamenhof-inverse">
-              <span>JUST</span>
-              <span className="text-red-500 ml-1">COOL</span>
-            </p>
-            <img
-              src="https://justcool.fr/assets/images/badge-halal.svg"
-              alt="Certifié Halal"
-              style={{ height: "2.2rem", width: "2.2rem" }}
-              className="object-contain hover:scale-110 transition-transform cursor-help hidden xs:block sm:block"
             />
           </a>
 

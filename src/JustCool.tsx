@@ -8,6 +8,7 @@ import Header from "./components/NavBar";
 import ProductModal from "./components/Productmodal";
 import CartDrawer from "./components/CartDrawer";
 import type { CartItem } from "./components/CartDrawer";
+import './App.css'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

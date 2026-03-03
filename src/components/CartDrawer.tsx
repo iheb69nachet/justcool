@@ -121,7 +121,7 @@ function buildWhatsAppMessage(items: CartItem[], dineMode: "surplace" | "emporte
   });
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
   return encodeURIComponent(
-    `Bonjour Just Cool 👋\n\nJe souhaite commander (${mode}) :\n\n${lines.join("\n\n")}\n\n*Total : ${formatPrice(total)}*`
+    `Bonjour Mange moi 👋\n\nJe souhaite commander (${mode}) :\n\n${lines.join("\n\n")}\n\n*Total : ${formatPrice(total)}*`
   );
 }
 
@@ -156,7 +156,7 @@ export default function CartDrawer({
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
-  const waNumber = "33497125303";
+  const waNumber = "33493076870";
   const waMsg = buildWhatsAppMessage(items, dineMode);
   const waUrl = `https://wa.me/${waNumber}?text=${waMsg}`;
 

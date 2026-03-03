@@ -26,8 +26,8 @@ createRoot(document.getElementById('root')!).render(
 
 
       </Routes>
-      <CookieConsent/>
-      <FloatingMenu/>
+      {/* <CookieConsent/>
+      <FloatingMenu/> */}
      <Footer/>
     </BrowserRouter>
   </StrictMode>

@@ -37,7 +37,7 @@ function Toggle({
         width: 52,
         height: 30,
         borderRadius: 999,
-        background: checked ? "#E45835" : "#3a3a3a",
+        background: checked ? "#e53e3e" : "#3a3a3a",
         border: "none",
         cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled ? 0.6 : 1,
@@ -172,7 +172,7 @@ export default function CookieConsent() {
             {view === "main" && (
               <div className={animDir === "back" ? "view-back" : "view-forward"}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-                  <span style={{ color: "#E45835" }}><CookieIcon size={26} /></span>
+                  <span style={{ color: "#e53e3e" }}><CookieIcon size={26} /></span>
                   <h2 style={{ color: "#fff", fontSize: 21, fontWeight: 800, margin: 0, letterSpacing: "-0.4px" }}>
                     Gestion des Cookies
                   </h2>
@@ -186,7 +186,7 @@ export default function CookieConsent() {
                   <button
                     className="red-btn"
                     onClick={() => setModalOpen(false)}
-                    style={{ ...btnBase, flex: 1, background: "#E45835", color: "#fff" }}
+                    style={{ ...btnBase, flex: 1, background: "#e53e3e", color: "#fff" }}
                   >
                     Tout accepter
                   </button>
@@ -227,7 +227,7 @@ export default function CookieConsent() {
             {view === "personalise" && (
               <div className={animDir === "forward" ? "view-forward" : "view-back"}>
                 <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-                  <span style={{ color: "#E45835" }}><CookieIcon size={26} /></span>
+                  <span style={{ color: "#e53e3e" }}><CookieIcon size={26} /></span>
                   <h2 style={{ color: "#fff", fontSize: 21, fontWeight: 800, margin: 0, letterSpacing: "-0.4px" }}>
                     Personnalisation
                   </h2>
@@ -269,7 +269,7 @@ export default function CookieConsent() {
                   <button
                     className="red-btn"
                     onClick={() => setModalOpen(false)}
-                    style={{ ...btnBase, flex: 1.6, background: "#E45835", color: "#fff" }}
+                    style={{ ...btnBase, flex: 1.6, background: "#e53e3e", color: "#fff" }}
                   >
                     Confirmer
                   </button>
@@ -296,7 +296,7 @@ export default function CookieConsent() {
             borderRadius: "50%",
             background: modalOpen ? "#2a2a2a" : "#1a1a1a",
             border: `1px solid ${modalOpen ? "rgba(228,88,53,0.5)" : "rgba(255,255,255,0.1)"}`,
-            color: modalOpen ? "#E45835" : "#aaa",
+            color: modalOpen ? "#e53e3e" : "#aaa",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",

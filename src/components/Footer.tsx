@@ -5,7 +5,7 @@ import React from "react";
 const MapPinIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true" className="shrink-0 mt-0.5 text-[#E45835] group-hover:scale-110 transition-transform">
+    aria-hidden="true" className="shrink-0 mt-0.5 text-[#e53e3e] group-hover:scale-110 transition-transform">
     <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
     <circle cx="12" cy="10" r="3" />
   </svg>
@@ -14,7 +14,7 @@ const MapPinIcon = () => (
 const PhoneIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true" className="shrink-0 text-[#E45835]">
+    aria-hidden="true" className="shrink-0 text-[#e53e3e]">
     <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" />
   </svg>
 );
@@ -22,7 +22,7 @@ const PhoneIcon = () => (
 const InstagramIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true" className="shrink-0 text-[#E45835]">
+    aria-hidden="true" className="shrink-0 text-[#e53e3e]">
     <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
     <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
@@ -32,7 +32,7 @@ const InstagramIcon = () => (
 const ClockIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true" className="shrink-0 text-[#E45835]">
+    aria-hidden="true" className="shrink-0 text-[#e53e3e]">
     <path d="M12 6v6l4 2" />
     <circle cx="12" cy="12" r="10" />
   </svg>
@@ -118,7 +118,7 @@ export default function Footer() {
                     href={href}
                     className={
                       highlight
-                        ? "text-[#E45835] hover:text-red-400 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-sm"
+                        ? "text-[#e53e3e] hover:text-red-400 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-sm"
                         : linkClass
                     }
                   >

@@ -33,7 +33,7 @@ interface OrderOptions {
   isStudent: boolean;
   supplements: string[];
   groupSelections: Record<string, string[]>;
-  supplementSurcharge: number; // ← NEW: per-unit surcharge from supplements
+  supplementSurcharge: number;
 }
 
 interface ProductModalProps {
@@ -159,6 +159,159 @@ function isSpicyName(name: string) {
   return SPICY_KEYWORDS.some((k) => lower.includes(k));
 }
 
+// ─── CruditesGroupSection ─────────────────────────────────────────────────────
+// Special UI for "Choisissez vos crudités" matching the reference design
+
+interface CruditesGroupSectionProps {
+  group: ApiSupplementGroup;
+  selected: string[];
+  hasError: boolean;
+  onChange: (groupId: string, newSelected: string[]) => void;
+}
+
+function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesGroupSectionProps) {
+  const sectionId = `section-group-${group.id}`;
+
+  const PRESET_NAMES = ["aucune crudité", "toutes les crudités"];
+  const activeSupplements = group.supplements
+    .filter((s) => s.is_active && !PRESET_NAMES.includes(s.name.trim().toLowerCase()))
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  const NATURE_SENTINEL = "__nature__";
+  const STATIC_ITEMS = ["Salade", "Tomate", "Oignon"];
+
+  // Strip sentinel to get real selections
+  const realSelected = selected.filter((id) => id !== NATURE_SENTINEL);
+  const isNatureSelected = selected.includes(NATURE_SENTINEL) || selected.length === 0;
+  const isCompletSelected = STATIC_ITEMS.every((label) => realSelected.includes(label));
+
+  const handleNature = () => onChange(group.id, [NATURE_SENTINEL]);
+  const handleComplet = () => onChange(group.id, [...STATIC_ITEMS]);
+
+  const toggleIndividual = (label: string) => {
+    if (realSelected.includes(label)) {
+      const next = realSelected.filter((id) => id !== label);
+      onChange(group.id, next.length === 0 ? [NATURE_SENTINEL] : next);
+    } else {
+      onChange(group.id, [...realSelected, label]);
+    }
+  };
+
+  return (
+    <fieldset
+      id={sectionId}
+      className={`-mx-3 p-3 rounded-xl transition-all ${hasError ? "section-error" : ""}`}
+    >
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4 flex-wrap">
+        <span className={`font-bold uppercase tracking-widest text-sm transition-colors ${hasError ? "text-red-400" : "text-white"}`}>
+          {group.name}
+        </span>
+        {group.is_required ? (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 border-red-500 bg-red-500/20 text-red-400">
+            Obligatoire
+          </span>
+        ) : (
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 border-white/20 bg-white/5 text-white/40">
+            Optionnel
+          </span>
+        )}
+        {group.description && (
+          <span className="text-white/35 text-xs italic">{group.description}</span>
+        )}
+      </div>
+
+      {hasError && (
+        <div className="mb-3">
+          <ErrorBanner message={`Veuillez choisir une option pour « ${group.name} ».`} />
+        </div>
+      )}
+
+      {/* Quick selection label */}
+      <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.15em] mb-2">
+        Sélection rapide
+      </p>
+
+      {/* NATURE / COMPLET preset cards */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {/* NATURE card */}
+        <button
+          type="button"
+          onClick={handleNature}
+          className={`relative flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border transition-all duration-200
+            ${isNatureSelected
+              ? "border-[#E45835] bg-[#E45835]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]"
+              : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"
+            }`}
+        >
+          <span className={`text-xs font-black uppercase tracking-widest ${isNatureSelected ? "text-white" : "text-white/60"}`}>
+            Nature
+          </span>
+          <span className="text-2xl leading-none select-none">🥬🍅🧅</span>
+          <span className="text-[10px] text-white/35 italic">aucune crudité</span>
+          {isNatureSelected && (
+            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#E45835] flex items-center justify-center shadow-md">
+              <CheckIcon />
+            </div>
+          )}
+        </button>
+
+        {/* COMPLET card */}
+        <button
+          type="button"
+          onClick={handleComplet}
+          className={`relative flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border transition-all duration-200
+            ${isCompletSelected
+              ? "border-[#E45835] bg-[#E45835]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]"
+              : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"
+            }`}
+        >
+          <span className={`text-xs font-black uppercase tracking-widest ${isCompletSelected ? "text-white" : "text-white/60"}`}>
+            Complet
+          </span>
+          <span className="text-2xl leading-none select-none">🥬🍅🧅</span>
+          <span className="text-[10px] text-white/35 italic">toutes les crudités</span>
+          {isCompletSelected && (
+            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#E45835] flex items-center justify-center shadow-md">
+              <CheckIcon />
+            </div>
+          )}
+        </button>
+      </div>
+
+      {/* Static individual chips: Salade, Tomate, Oignon */}
+      <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.15em] mb-3">
+        Ou sélection individuelle
+      </p>
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+        {(["Salade", "Tomate", "Oignon"] as const).map((label) => {
+          const isSelected = realSelected.includes(label);
+          return (
+            <button
+              key={label}
+              type="button"
+              onClick={() => toggleIndividual(label)}
+              className="flex items-center gap-2 group"
+            >
+              <span className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all duration-150 border-2
+                ${isSelected
+                  ? "bg-[#E45835] border-[#E45835] shadow-[0_0_10px_rgba(228,88,53,0.5)]"
+                  : "bg-transparent border-white/35 group-hover:border-white/60"
+                }`}>
+                {isSelected && <CheckIcon />}
+              </span>
+              <span className={`text-sm font-bold uppercase tracking-widest transition-colors
+                ${isSelected ? "text-white" : "text-white/60 group-hover:text-white/90"}`}>
+                {label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
+
 // ─── GroupSection ─────────────────────────────────────────────────────────────
 
 interface GroupSectionProps {
@@ -169,6 +322,21 @@ interface GroupSectionProps {
 }
 
 function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps) {
+  // Special UI for crudités
+  if (group.name === "Choisissez vos crudités") {
+    return (
+      <CruditesGroupSection
+        group={group}
+        selected={selected}
+        hasError={hasError}
+        onChange={onChange}
+      />
+    );
+  }
+  if(group.name=="Ou sélection individuelle"){
+    return null;
+  }
+
   const isRadio  = group.max_selection === 1;
   const isMulti  = group.max_selection > 1;
   const atMax    = isMulti && selected.length >= group.max_selection;
@@ -218,10 +386,10 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
         )}
 
         {isMulti && (
-  <span className="text-xs px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">
-    MAX {group.max_selection}
-  </span>
-)}
+          <span className="text-xs px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">
+            MAX {group.max_selection}
+          </span>
+        )}
 
         {group.description && (
           <span className="text-white/35 text-xs italic">{group.description}</span>
@@ -263,11 +431,11 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
               {isSpicyName(sup.name) && <FlameIcon />}
               {sup.price > 0 && (
                 <span
-  className="text-xs font-semibold"
-  style={{ color: "#E45835" }}
->
-  +{sup.price.toFixed(2)}€
-</span>
+                  className="text-xs font-semibold"
+                  style={{ color: "#E45835" }}
+                >
+                  +{sup.price.toFixed(2)}€
+                </span>
               )}
             </div>
           ))}
@@ -335,7 +503,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
   const supplementSurcharge = (() => {
     let extra = 0;
     supplementGroups.forEach((g) => {
-      (groupSelections[g.id] ?? []).forEach((supId) => {
+      (groupSelections[g.id] ?? []).filter((id) => id !== "__nature__").forEach((supId) => {
         const sup = g.supplements.find((s) => s.id === supId);
         if (sup) extra += sup.price;
       });
@@ -352,7 +520,9 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
 
     const failedGroups = supplementGroups.filter((g) => {
       if (!g.is_required) return false;
-      const sel = groupSelections[g.id] ?? [];
+      const sel = (groupSelections[g.id] ?? []);
+      // NATURE sentinel counts as a valid "none" selection
+      if (sel.includes("__nature__")) return false;
       return sel.length < Math.max(1, g.min_selection);
     });
 
@@ -374,7 +544,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
     const namedGroupSelections: Record<string, string[]> = {};
 
     supplementGroups.forEach((g) => {
-      const selectedIds = groupSelections[g.id] ?? [];
+      const selectedIds = (groupSelections[g.id] ?? []).filter((id) => id !== "__nature__");
       const selectedNames = selectedIds.map((id) => {
         const sup = g.supplements.find((s) => s.id === id);
         return sup ? sup.name.trim() : id;
@@ -393,7 +563,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
       isStudent: false,
       supplements: allSelectedNames,
       groupSelections: namedGroupSelections,
-      supplementSurcharge, // ← per-unit surcharge passed to parent
+      supplementSurcharge,
     });
     onClose();
   };
@@ -476,9 +646,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 </div>
               )}
 
-              {/* Description */}
-              
-
               {/* Price */}
               <div>
                 <div
@@ -487,7 +654,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 >
                   {product.price.toFixed(2)}€
                 </div>
-                
               </div>
 
               {/* ── Dynamic supplement groups ── */}
@@ -549,7 +715,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                   boxShadow: "0 0 20px rgba(228,88,53,0.5)"
                 }}
               >
-                              <span className="uppercase tracking-wider text-sm">Ajouter</span>
+                <span className="uppercase tracking-wider text-sm">Ajouter</span>
                 <span className="font-black text-lg">{totalPrice.toFixed(2)}€</span>
               </button>
             </div>

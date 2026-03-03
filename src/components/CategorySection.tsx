@@ -1,7 +1,7 @@
 import React, { useRef, useState, useCallback } from "react";
 import { NeonText } from "./NeonText";
 
-// ─── Types ────────────────r────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Product {
   id: string | number;
@@ -90,10 +90,10 @@ function ProductCard({
       aria-label={`${name}. ${mainIngredient}. ${price.toFixed(2)}€. Personnaliser.`}
       aria-haspopup="dialog"
       className="product-card flex flex-col rounded-xl border border-white/10 bg-black text-white
-  transition-all duration-300 ease-out
-  hover:border-[#E45835] hover:shadow-[0_0_30px_rgba(228,88,53,0.4)] hover:scale-[1.02] hover:z-10
-  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E45835]
-  w-[11rem] h-[26rem] flex-shrink-0 overflow-hidden relative cursor-pointer"
+        transition-all duration-300 ease-out
+        hover:border-red-600 hover:shadow-[0_0_30px_rgba(204,30,39,0.4)] hover:scale-[1.02] hover:z-10
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600
+        w-[11rem] h-[26rem] flex-shrink-0 overflow-hidden relative cursor-pointer"
       onClick={() => onClick?.(product)}
       onKeyDown={(e) => e.key === "Enter" && onClick?.(product)}
     >
@@ -139,24 +139,27 @@ function ProductCard({
 
         {/* Pricing + CTA */}
         <div className="mt-auto" aria-hidden="true">
-          <div className="font-black text-[#E45835] text-3xl mb-2">
+          <div className="font-black text-red-600 text-3xl mb-2">
             {price.toFixed(2)}€
           </div>
           <p className="text-white/40 text-xs whitespace-nowrap overflow-hidden mb-0.5">
             <span className="font-bold">+{menuUpcharge}€</span> en menu{" "}
             <span>(frites + boisson)</span>
           </p>
-        
+          <p className="text-white/40 text-xs whitespace-nowrap mb-2">
+            <span className="font-bold">-{studentDiscount}€</span> pour
+            étudiants
+          </p>
           <span
-  className="inline-flex items-center justify-center w-full
-  h-9 rounded-full px-4 text-sm font-bold uppercase tracking-wider text-white
-  bg-gradient-to-r from-[#E45835] to-[#cc4729]
-  hover:from-[#ff6a42] hover:to-[#E45835]
-  hover:shadow-[0_0_30px_rgba(228,88,53,0.8)]
-  shadow-lg transition-all duration-300"
->
-  Personnaliser
-</span>
+            className="inline-flex items-center justify-center w-full
+            h-9 rounded-full px-4 text-sm font-bold uppercase tracking-wider text-white
+            bg-gradient-to-r from-red-600 to-red-700
+            hover:from-red-500 hover:to-red-600
+            hover:shadow-[0_0_30px_rgba(204,30,39,0.8)]
+            shadow-lg transition-all duration-300"
+          >
+            Personnaliser
+          </span>
         </div>
       </div>
     </article>
@@ -198,27 +201,24 @@ export default function CategorySection({
         .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .carousel-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 12;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 9999px;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #E45835; /* ORANGE */
-  color: #fff;
-  box-shadow: 0 0 15px rgba(228,88,53,0.4);
-  transition: opacity 0.2s, background 0.2s;
-}
-
-.carousel-arrow:hover {
-  background: #d64f30; /* orange plus foncé */
-}
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 10;
+          width: 2rem;
+          height: 2rem;
+          border-radius: 9999px;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #dc2626;
+          color: #fff;
+          box-shadow: 0 0 15px rgba(204,30,39,0.4);
+          transition: opacity 0.2s, background 0.2s;
+        }
+        .carousel-arrow:hover { background: #b91c1c; }
         .carousel-arrow:disabled { opacity: 0; pointer-events: none; }
       `}</style>
 
@@ -245,7 +245,7 @@ export default function CategorySection({
             className="uppercase text-[2.25rem] font-bold tracking-wider text-white font-zamenhof-inverse"
             style={{ textShadow: "rgb(255 255 255) 0px 0px 20px" }}
           >
-            
+            Just
           </span>
           <NeonText text={categoryLabel} />
           <span className="sr-only">{categoryLabel}</span>

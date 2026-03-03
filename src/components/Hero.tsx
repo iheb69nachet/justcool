@@ -55,7 +55,7 @@ export default function Hero() {
           </span>
           <span
             aria-hidden="true"
-            className="block text-red-600 font-extrabold mt-2 uppercase tracking-wide font-framer-sans"
+            className="block text-red-600 font-extrabold mt-2 uppercase tracking-wide font-zamenhof-inverse"
             style={{ textShadow: "#e45835 0px 0px 30px" }}
           >
             font notre renommée
@@ -81,7 +81,7 @@ export default function Hero() {
               hover:shadow-[0_0_30px_rgba(228,88,53,0.8)]
               transition-all duration-300
               whitespace-nowrap
-              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E45835]"
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#E45835] font-framer-sans"
           >
             COMMANDER MAINTENANT
           </a>

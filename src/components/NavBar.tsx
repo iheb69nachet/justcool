@@ -248,7 +248,7 @@ export default function Header({
             <span className="arrow">›</span>
           </a>
           <a
-            href="/a-propos"
+            href="/about"
             className="mobile-nav-link"
             onClick={() => setMobileOpen(false)}
           >
@@ -265,7 +265,6 @@ export default function Header({
             </a>
           </div>
         </div>
-        <FloatingMenu/>
       </header>
     </>
   );

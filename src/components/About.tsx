@@ -105,7 +105,6 @@ export default function About() {
         .fade-delay-4 { transition-delay: 0.4s; }
         .red-glow { box-shadow: 0 0 60px rgba(220,38,38,0.15); }
       `}</style>
-      <NavBar />
       {/* HERO */}
       <section className="relative overflow-hidden pt-24 pb-24 bg-black">
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-red-600/10 to-transparent pointer-events-none" />
@@ -293,7 +292,6 @@ export default function About() {
           </div>
         </div>
       </section>
-      <Footer/>
     </div>
   );
 }

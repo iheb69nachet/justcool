@@ -9,6 +9,7 @@ import ProductModal from "./components/Productmodal";
 import CartDrawer from "./components/CartDrawer";
 import type { CartItem } from "./components/CartDrawer";
 import './App.css'
+import CartFAB from "./components/Cartfab";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -650,10 +651,7 @@ export default function JustCool() {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-black text-white">
-      <Header
-        cartCount={cartCount}
-        onCartClick={() => setCartOpen(true)}
-      />
+ 
 
       <main>
         <Hero />
@@ -710,7 +708,6 @@ export default function JustCool() {
         )}
       </main>
 
-      <Footer />
 
       <ProductModal
         product={selectedProduct}
@@ -728,6 +725,7 @@ export default function JustCool() {
         dineMode={dineMode}
         onDineModeChange={setDineMode}
       />
+      <CartFAB itemCount={cartItems.reduce((s, i) => s + i.quantity, 0)} onClick={() => setCartOpen(true)} /> 
     </div>
   );
 }

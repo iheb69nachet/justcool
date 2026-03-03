@@ -95,10 +95,11 @@ export default function FloatingMenu() {
         .fab-icon-close { animation: rotate-out 0.25s ease forwards; }
       `}</style>
 
-      <div ref={ref} className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      {/* Changed: bottom-6 right-6 → bottom-6 left-6, items-end → items-start */}
+      <div ref={ref} className="fixed bottom-15 left-6 z-50 flex flex-col items-start gap-3">
         {/* Sub buttons */}
         {open && (
-          <div className="flex flex-col items-end gap-3">
+          <div className="flex flex-col items-start gap-3">
             {links.map((link, i) => (
               <a
                 key={i}
@@ -108,6 +109,17 @@ export default function FloatingMenu() {
                 className="fab-item flex items-center gap-3 group"
                 onClick={() => setOpen(false)}
               >
+                {/* Icon button first, then label (mirrors right-side layout) */}
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-xl transition-transform duration-200 group-hover:scale-110"
+                  style={{
+                    background: link.color,
+                    boxShadow: `0 4px 20px ${link.color}55`,
+                  }}
+                >
+                  {link.icon}
+                </div>
+
                 {/* Label */}
                 <span
                   className="text-white text-sm font-semibold px-3 py-1.5 rounded-full shadow-lg tracking-wide"
@@ -120,36 +132,25 @@ export default function FloatingMenu() {
                 >
                   {link.label}
                 </span>
-
-                {/* Icon button */}
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-xl transition-transform duration-200 group-hover:scale-110"
-                  style={{
-                    background: link.color,
-                    boxShadow: `0 4px 20px ${link.color}55`,
-                  }}
-                >
-                  {link.icon}
-                </div>
               </a>
             ))}
           </div>
         )}
 
         {/* Main FAB */}
-        {/* Main FAB */}
-<button
-  onClick={() => setOpen((v) => !v)}
-  aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-className="px-8 h-14 rounded-full flex items-center justify-center ..."  style={{
-    background: open ? "#cc4729" : "#E45835",
-    border: open ? "1px solid rgba(255,255,255,0.15)" : "none",
-  }}
->
-  <span className="font-bold uppercase tracking-wider text-sm">
-    Commander
-  </span>
-</button>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
+          className="px-8 h-14 rounded-full flex items-center justify-center"
+          style={{
+            background: open ? "#cc4729" : "#E45835",
+            border: open ? "1px solid rgba(255,255,255,0.15)" : "none",
+          }}
+        >
+          <span className="font-bold uppercase tracking-wider text-sm text-white">
+            Commander
+          </span>
+        </button>
       </div>
     </>
   );

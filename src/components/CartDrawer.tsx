@@ -265,10 +265,10 @@ export default function CartDrawer({
         }
         .dine-btn-inactive:hover { color: #fff; }
         .dine-btn-active {
-          background: linear-gradient(135deg, #dc2626, #b91c1c);
-          color: #fff;
-          box-shadow: 0 2px 12px rgba(220,38,38,0.4);
-        }
+  background: linear-gradient(135deg, #e45835, #e45835);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(228,88,53,0.4);
+}
 
         .wa-btn {
           width: 100%;
@@ -376,14 +376,14 @@ export default function CartDrawer({
           className="flex flex-col gap-1 p-4 border-b border-white/10"
         >
           <div className="flex items-center gap-2" id="cart-title">
-            <span className="text-red-500"><BagIcon /></span>
+            <span className="text-[#e45835]"><BagIcon /></span>
             <h3 className="font-bold text-white text-xl">Mon Panier</h3>
             {!isEmpty && (
               <span style={{
                 marginLeft: "auto",
-                background: "rgba(220,38,38,0.15)",
-                border: "1px solid rgba(220,38,38,0.3)",
-                color: "#ef4444",
+                background: "rgba(228,88,53,0.15)",
+border: "1px solid rgba(228,88,53,0.3)",
+color: "#e45835",
                 fontSize: "0.75rem",
                 fontWeight: 700,
                 padding: "2px 10px",
@@ -430,7 +430,7 @@ export default function CartDrawer({
                           }}>
                             {item.name}
                           </h4>
-                          <span style={{ fontWeight: 900, color: "#dc2626", fontSize: "0.875rem", flexShrink: 0 }}>
+                          <span style={{ fontWeight: 900, color: "#e45835", fontSize: "0.875rem", flexShrink: 0 }}>
                             {formatPrice(item.price * item.quantity)}
                           </span>
                         </div>
@@ -510,7 +510,7 @@ export default function CartDrawer({
           {/* Total */}
           <div className="flex items-center justify-between px-1" aria-live="polite" aria-atomic="true">
             <span style={{ color: "rgba(255,255,255,0.5)", fontWeight: 400 }}>Total de la commande</span>
-            <span style={{ fontWeight: 900, color: "#dc2626", fontSize: "1.75rem", fontFamily: "sans-serif" }}>
+            <span style={{ fontWeight: 900, color: "#e45835", fontSize: "1.75rem", fontFamily: "sans-serif" }}>
               {formatPrice(total)}
             </span>
           </div>

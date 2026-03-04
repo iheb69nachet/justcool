@@ -244,7 +244,7 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
               : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"
             }`}
         >
-          <span className={`text-xs font-black uppercase tracking-widest ${isNatureSelected ? "text-white" : "text-white/60"}`}>
+          <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isNatureSelected ? "text-white" : "text-white/60"}`}>
             Nature
           </span>
           <span className="text-2xl leading-none select-none">🥬🍅🧅</span>
@@ -266,7 +266,7 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
               : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"
             }`}
         >
-          <span className={`text-xs font-black uppercase tracking-widest ${isCompletSelected ? "text-white" : "text-white/60"}`}>
+          <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isCompletSelected ? "text-white" : "text-white/60"}`}>
             Complet
           </span>
           <span className="text-2xl leading-none select-none">🥬🍅🧅</span>

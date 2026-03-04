@@ -247,8 +247,12 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
           <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isNatureSelected ? "text-white" : "text-white/60"}`}>
             Nature
           </span>
-          <span className="text-2xl leading-none select-none">🥬🍅🧅</span>
-          <span className="text-[10px] text-white/35 italic">aucune crudité</span>
+          {/* emojis + barre (uniquement Nature) */}
+          <span className="relative text-2xl leading-none select-none inline-block">
+            🥬🍅🧅
+            <span className="pointer-events-none absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 -rotate-[18deg] bg-white/70" />
+          </span>
+          <span className="text-[10px] text-white/35 italic">Aucune crudité</span>
           {isNatureSelected && (
             <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#E45835] flex items-center justify-center shadow-md">
               <CheckIcon />

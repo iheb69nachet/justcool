@@ -645,6 +645,22 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                   />
                 </div>
               )}
+ {/* Description */}
+              {(product.mainIngredient || product.description) && (
+                <div className="space-y-1 px-1">
+                  {product.mainIngredient && (
+                    <p className="text-white/60 text-base leading-relaxed">{product.mainIngredient}</p>
+                  )}
+                  {product.description && (
+                    <p className="text-white/40 text-xs flex items-center gap-1.5">
+                      <span className="font-bold text-red-500">+ / −</span>
+                      {product.description}
+                    </p>
+                  )}
+                </div>
+              )}
+
+           
 
               {/* Price */}
               <div>
@@ -654,6 +670,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 >
                   {product.price.toFixed(2)}€
                 </div>
+                <div className="text-xs text-white/50 italic mb-4">Allergènes : voir <a className="text-red-600 underline decoration-dotted underline-offset-2 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm" href="/#">tableau</a> ou en restaurant</div>
               </div>
 
               {/* ── Dynamic supplement groups ── */}

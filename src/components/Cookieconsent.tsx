@@ -122,7 +122,7 @@ export default function CookieConsent() {
   return (
     <>
       <style>{`
-      *{
+      .cookies{
       font-family:'Framer Sans'
       }
         @keyframes modal-in {
@@ -153,7 +153,7 @@ export default function CookieConsent() {
         .grey-btn:hover { background: #2e2e2e !important; }
       `}</style>
 
-      <div className="fixed z-50" style={{ bottom: "2px", left: "1.5rem" }}>
+      <div className="fixed z-50 cookies" style={{ bottom: "2px", left: "1.5rem" }}>
 
         {modalOpen && (
           <div

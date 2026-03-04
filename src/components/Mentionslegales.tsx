@@ -1,5 +1,10 @@
+import Header from "./NavBar";
+
 export default function MentionsLegales() {
   return (
+    <>
+        <Header
+        />
     <main className="flex-1 flex flex-col min-h-screen bg-black text-white pt-32 pb-20 px-4 md:px-8 font-sans">
       <div className="max-w-3xl mx-auto space-y-12">
 
@@ -154,5 +159,6 @@ export default function MentionsLegales() {
 
       </div>
     </main>
+    </>
   );
 }

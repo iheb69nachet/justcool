@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
+import Header from "./NavBar";
 
 const StarIcon = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" className="text-yellow-400">
@@ -93,6 +94,9 @@ export default function About() {
 
   return (
     <div className="bg-black text-white min-h-screen font-sans">
+      <Header
+      
+      />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
         .font-display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }

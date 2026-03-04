@@ -7,7 +7,7 @@ export interface Product {
   id: string | number;
   name: string;
   mainIngredient: string;
-  description?: string;
+  description ?: string;
   price: number;
   menuUpcharge?: number;
   studentDiscount?: number;

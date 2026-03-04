@@ -1,9 +1,10 @@
 @import "tailwindcss";
+@import url("https://fonts.cdnfonts.com/css/framer-sans");
+@import url("https://fonts.cdnfonts.com/css/zamenhof");
 
-@theme {
-  --font-zamenhof-inverse: "Zamenhof Inverse", sans-serif;
+:root {
   --font-framer-sans: "Framer Sans", sans-serif;
-  --font-lucida: "Lucida Handwriting", cursive;
+  --font-zamenhof-inverse: "Zamenhof Inverse", sans-serif;
 }
 
 @layer base {

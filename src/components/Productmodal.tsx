@@ -570,6 +570,8 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
 
   if (!isOpen || !product) return null;
 
+  const hasCrudites = supplementGroups.some((g) => g.name === "Choisissez vos crudités");
+
   const visibleGroups = supplementGroups
     .filter((g) => g.supplements.some((s) => s.is_active))
     .sort((a, b) => a.sort_order - b.sort_order);
@@ -645,7 +647,8 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                   />
                 </div>
               )}
- {/* Description */}
+
+              {/* Description */}
               {(product.mainIngredient || product.description) && (
                 <div className="space-y-1 px-1">
                   {product.mainIngredient && (
@@ -660,7 +663,13 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 </div>
               )}
 
-           
+              {/* Crudités hint — shown only when the product has a crudités group */}
+              {hasCrudites && (
+                <div className="text-white/40 font-sans text-xs flex items-center gap-2 font-sans">
+                  <span className="font-bold text-[#E45835]">+ / -</span>
+                  <span>Crudités : Salade, Tomate, Oignon</span>
+                </div>
+              )}
 
               {/* Price */}
               <div>

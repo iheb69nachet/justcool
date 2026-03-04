@@ -5,7 +5,7 @@ import React from "react";
 const MapPinIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true" className="shrink-0 mt-0.5 text-[#E45835] group-hover:scale-110 transition-transform">
+    aria-hidden="true" className="shrink-0 mt-0.5 text-[#CC2222] group-hover:scale-110 transition-transform">
     <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
     <circle cx="12" cy="10" r="3" />
   </svg>
@@ -14,7 +14,7 @@ const MapPinIcon = () => (
 const PhoneIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true" className="shrink-0 text-[#E45835]">
+    aria-hidden="true" className="shrink-0 text-[#CC2222]">
     <path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" />
   </svg>
 );
@@ -22,7 +22,7 @@ const PhoneIcon = () => (
 const InstagramIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true" className="shrink-0 text-[#E45835]">
+    aria-hidden="true" className="shrink-0 text-[#CC2222]">
     <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
     <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
     <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
@@ -32,7 +32,7 @@ const InstagramIcon = () => (
 const ClockIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    aria-hidden="true" className="shrink-0 text-[#E45835]">
+    aria-hidden="true" className="shrink-0 text-[#CC2222]">
     <path d="M12 6v6l4 2" />
     <circle cx="12" cy="12" r="10" />
   </svg>
@@ -55,7 +55,7 @@ export default function Footer() {
 
           {/* ── Column 1: Contact ── */}
           <div className="space-y-4">
-            <h3 className="font-bold text-white text-xl">Mange moi</h3>
+            <h3 className="font-bold text-white text-xl">Just cool</h3>
 
             <address className="not-italic space-y-4">
               {/* Address */}
@@ -67,8 +67,9 @@ export default function Footer() {
               >
                 <MapPinIcon />
                 <div>
-                  <p>MANGE MOI – 30 Av. de la République, </p>
-                  <p>06300 Nice</p>
+                  <p>2 Bd de Riquier
+06300  </p>
+                  <p>Nice, France</p>
                 </div>
               </a>
 
@@ -76,12 +77,17 @@ export default function Footer() {
               <div className="flex items-center gap-3">
                 <PhoneIcon />
                 <a href="tel:0497125303" className={linkClass}>
-                  04 93 07 68 70
+                  04 97 12 53 03
                 </a>
               </div>
 
               {/* Instagram */}
-              
+<div className="flex items-center gap-3">
+  <InstagramIcon />
+  <a href="https://instagram.com/justcool.nice" className={linkClass}>
+    @justcool.nice
+  </a>
+</div>
             </address>
           </div>
 
@@ -93,50 +99,74 @@ export default function Footer() {
             </h3>
 
             <ul className="space-y-2 text-sm">
-              <li className="flex justify-between gap-4">
-                <span className="text-zinc-400">Tous les jours </span>
-                <time dateTime="Mo-Sa 11:00-00:30" className="font-bold text-white whitespace-nowrap">
-                  11:00 – 23:00
-                </time>
-              </li>
-            </ul>
+  <li className="flex justify-between gap-4">
+    <span className="text-zinc-400">Lundi - Samedi</span>
+    <time
+      dateTime="Mo-Sa 11:00-00:30"
+      className="font-bold text-white whitespace-nowrap"
+    >
+      11:00 - 00:30
+    </time>
+  </li>
+
+  <li className="flex justify-between gap-4">
+    <span className="text-zinc-400">Dimanche</span>
+    <time
+      dateTime="Su 12:00-00:30"
+      className="font-bold text-white whitespace-nowrap"
+    >
+      12:00 - 00:30
+    </time>
+  </li>
+</ul>
           </div>
 
           {/* ── Column 3: Links ── */}
           <nav aria-label="Footer Navigation">
             <h3 className="font-bold text-white text-xl mb-4">Informations</h3>
 
-            <ul className="space-y-2">
-              {[
-                { href: "/a-propos", label: "À propos", highlight: true },
-                { href: "/mentions-legales", label: "Mentions Légales" },
-                { href: "/cgv", label: "CGV" },
-            
-              ].map(({ href, label, highlight }) => (
-                <li key={href}>
-                  <a
-                    href={href}
-                    className={
-                      highlight
-                        ? "text-[#E45835] hover:text-red-400 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-sm"
-                        : linkClass
-                    }
-                  >
-                    {label}
-                  </a>
-                </li>
-              ))}
+           <ul className="space-y-2 text-sm">
 
-              <li>
-                
-              </li>
+<li>
+<a href="/about" className="text-red-500 hover:text-white">
+À propos
+</a>
+</li>
 
-              <li className="pt-4">
-                <span className="text-white/40 text-xs">
-                  © {currentYear} Mange moi . Tous droits réservés.
-                </span>
-              </li>
-            </ul>
+<li>
+<a href="/mentions-legales" className="text-zinc-400 hover:text-white">
+Mentions Légales
+</a>
+</li>
+
+<li>
+<a href="/cgv" className="text-zinc-400 hover:text-white">
+CGV
+</a>
+</li>
+
+<li>
+<a href="/confidentialite" className="text-zinc-400 hover:text-white">
+Politique de confidentialité
+</a>
+</li>
+
+<li>
+<a href="/allergenes" className="text-zinc-400 hover:text-white">
+Allergènes
+</a>
+</li>
+
+<li>
+<a href="/cookies" className="text-zinc-400 hover:text-white">
+Gérer les cookies
+</a>
+</li>
+
+</ul>
+<p className="text-xs text-zinc-500 mt-6">
+© 2026 Just Cool. Tous droits réservés.
+</p>
           </nav>
 
         </div>

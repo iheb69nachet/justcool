@@ -135,8 +135,11 @@ function ProductCard({
         <div className="h-[3.75rem] mb-2 text-sm line-clamp-3">
           <p className="text-white/60 font-bold text-sm">{mainIngredient}</p>
           {description && <p className="text-white/40 text-xs">{description}</p>}
+          <p className="text-xs text-white/50 mt-2">
+  + Salade, Tomate, Oignon
+</p>
         </div>
-
+        
         {/* Pricing + CTA */}
         <div className="mt-auto" aria-hidden="true">
           <div className="font-black text-red-600 text-3xl mb-2">

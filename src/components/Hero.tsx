@@ -32,24 +32,28 @@ export default function Hero() {
         {/* Heading */}
         <h1
   id="hero-title"
-  className='font-bold text-white text-5xl md:text-[60px] leading-[75px] text-center'
+  className='font-bold text-white text-4xl md:text-[60px] leading-[65px] text-center'
   style={{ fontFamily: '"Framer Sans", sans-serif' }}
 >
   <span
-    aria-hidden="true"
-    className="block text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 uppercase tracking-wider"
-  >
-    LE SPÉCIALISTE DU
-  </span>
+  aria-hidden="true"
+  className="
+  block text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-300 uppercase tracking-wide
+  max-sm:whitespace-nowrap
+  max-sm:text-[37px]
+  max-sm:mt-1
+"
+>
+  LE SPÉCIALISTE DU
+</span>
 
-  {/* Ligne 2 */}
  {/* Ligne 2 */}
 <span
   aria-hidden="true"
-  className="block mt-2 uppercase tracking-wider text-transparent"
+  className="block mt-2 max-sm:mt-1 uppercase tracking-wider text-transparent max-sm:whitespace-nowrap max-sm:text-[30px]"
   style={{
     fontFamily: "Zamenhof Inverse, sans-serif",
-    WebkitTextStroke: "0.5px #CC2222",
+    WebkitTextStroke: "0.1px #CC2222",
     textShadow: "0 0 30px rgba(220,38,38,0.4)"
   }}
 >
@@ -90,7 +94,9 @@ export default function Hero() {
   "
   style={{ fontFamily: "Framer Sans, sans-serif" }}
 >
+  <a href="/#nav-categories" className="...">
   COMMANDER MAINTENANT
+</a>
 </a>
         </div>
       </div>

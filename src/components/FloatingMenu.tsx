@@ -14,7 +14,7 @@ const links: FloatingLink[] = [
   {
     label: "Delicity",
     href: "https://TON-LIEN-DELICITY",
-    color: "#e53e3e00",
+    color: "#e4583500",
     icon: (
       <img
         src={delicityLogo}
@@ -26,7 +26,7 @@ const links: FloatingLink[] = [
   {
     label: "Deliveroo",
     href: "https://TON-LIEN-DELIVEROO",
-    color: "#e53e3e00",
+    color: "#e4583500",
     icon: (
       <img
         src={deliverooLogo}
@@ -38,7 +38,7 @@ const links: FloatingLink[] = [
   {
     label: "Uber Eats",
     href: "https://TON-LIEN-UBER-EATS",
-    color: "#e53e3e00",
+    color: "#e4583500",
     icon: (
       <img
         src={ubereatsLogo}
@@ -143,7 +143,7 @@ export default function FloatingMenu() {
           aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
           className="px-8 h-14 rounded-full flex items-center justify-center"
           style={{
-            background: open ? "#cc4729" : "#e53e3e",
+            background: open ? "#cc4729" : "#E45835",
             border: open ? "1px solid rgba(255,255,255,0.15)" : "none",
           }}
         >

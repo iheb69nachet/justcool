@@ -10,7 +10,7 @@ interface NeonTextProps {
 export function NeonText({
   text,
   fontSize = 34,
-  glowColor = "#e53e3e",
+  glowColor = "#e45835",
   outlineColor = "#D9C8C3",
   width = "100%",
   height = 50,

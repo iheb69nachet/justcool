@@ -651,7 +651,10 @@ export default function JustCool() {
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-black text-white">
- 
+  <Header 
+         cartCount={cartCount}
+        onCartClick={() => setCartOpen(true)}
+      />
 
       <main>
         <Hero />

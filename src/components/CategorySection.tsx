@@ -7,7 +7,7 @@ export interface Product {
   id: string | number;
   name: string;
   mainIngredient: string;
-  extras?: string;
+  description?: string;
   price: number;
   menuUpcharge?: number;
   studentDiscount?: number;
@@ -75,7 +75,7 @@ function ProductCard({
   const {
     name,
     mainIngredient,
-    extras,
+    description,
     price,
     menuUpcharge = 2,
     studentDiscount = 1,
@@ -134,7 +134,7 @@ function ProductCard({
         {/* Ingredients */}
         <div className="h-[3.75rem] mb-2 text-sm line-clamp-3">
           <p className="text-white/60 font-bold text-sm">{mainIngredient}</p>
-          {extras && <p className="text-white/40 text-xs">{extras}</p>}
+          {description && <p className="text-white/40 text-xs">{description}</p>}
         </div>
 
         {/* Pricing + CTA */}

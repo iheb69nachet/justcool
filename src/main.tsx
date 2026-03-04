@@ -16,7 +16,7 @@ import CartFAB from './components/Cartfab.tsx'
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
-      <Header/>
+     
       <Routes>
         
         <Route path="/" element={<JustCool />} />
@@ -26,8 +26,8 @@ createRoot(document.getElementById('root')!).render(
 
 
       </Routes>
-      {/* <CookieConsent/>
-      <FloatingMenu/> */}
+       <CookieConsent/>
+     {/* <FloatingMenu/> */}
      <Footer/>
     </BrowserRouter>
   </StrictMode>

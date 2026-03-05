@@ -126,7 +126,7 @@ function ImageOption({
       disabled={disabled && !selected}
       className={`relative flex items-center gap-1 h-[60px] rounded-full border pr-3 w-full overflow-hidden transition-all duration-200
         ${selected
-          ? "border-[#E45835] bg-[#E45835]/15 shadow-[0_0_12px_rgba(228,88,53,0.3)]"
+          ? "border-[#DC2626] bg-[#DC2626]/15 shadow-[0_0_12px_rgba(228,88,53,0.3)]"
           : "border-white/20 bg-white/5 text-white/70 hover:bg-white/10 hover:border-white/40"
         }
         disabled:opacity-40 disabled:cursor-not-allowed`}
@@ -240,7 +240,7 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
           onClick={handleNature}
           className={`relative flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border transition-all duration-200
             ${isNatureSelected
-              ? "border-[#E45835] bg-[#E45835]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]"
+              ? "border-[#DC2626] bg-[#DC2626]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]"
               : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"
             }`}
         >
@@ -254,7 +254,7 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
           </span>
           <span className="text-[10px] text-white/35 italic">Aucune crudité</span>
           {isNatureSelected && (
-            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#E45835] flex items-center justify-center shadow-md">
+            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#DC2626] flex items-center justify-center shadow-md">
               <CheckIcon />
             </div>
           )}
@@ -266,7 +266,7 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
           onClick={handleComplet}
           className={`relative flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border transition-all duration-200
             ${isCompletSelected
-              ? "border-[#E45835] bg-[#E45835]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]"
+              ? "border-[#DC2626] bg-[#DC2626]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]"
               : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"
             }`}
         >
@@ -276,7 +276,7 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
           <span className="text-2xl leading-none select-none">🥬🍅🧅</span>
           <span className="text-[10px] text-white/35 italic">toutes les crudités</span>
           {isCompletSelected && (
-            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#E45835] flex items-center justify-center shadow-md">
+            <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-[#DC2626] flex items-center justify-center shadow-md">
               <CheckIcon />
             </div>
           )}
@@ -299,7 +299,7 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
             >
               <span className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all duration-150 border-2
                 ${isSelected
-                  ? "bg-[#E45835] border-[#E45835] shadow-[0_0_10px_rgba(228,88,53,0.5)]"
+                  ? "bg-[#DC2626] border-[#DC2626] shadow-[0_0_10px_rgba(228,88,53,0.5)]"
                   : "bg-transparent border-white/35 group-hover:border-white/60"
                 }`}>
                 {isSelected && <CheckIcon />}
@@ -378,8 +378,8 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
         {group.is_required ? (
           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 transition-colors
             ${hasError
-              ? "border-orange-500 bg-orange-500/20 text-orange-400"
-              : "border-orange-500 bg-orange-500/20 text-orange-400"}`}>
+             ? "border-red-500 bg-red-500/20 text-red-400"
+: "border-red-500 bg-red-500/20 text-red-400"}`}>
             Obligatoire
           </span>
         ) : (
@@ -390,8 +390,7 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
         )}
 
         {isMulti && (
-          <span className="text-xs px-2 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30">
-            MAX {group.max_selection}
+<span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">            MAX {group.max_selection}
           </span>
         )}
 
@@ -436,7 +435,7 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
               {sup.price > 0 && (
                 <span
                   className="text-xs font-semibold"
-                  style={{ color: "#E45835" }}
+                  style={{ color: "#DC2626" }}
                 >
                   +{sup.price.toFixed(2)}€
                 </span>
@@ -622,7 +621,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
 
           {/* ── Header ── */}
           <div className="flex items-center justify-between px-4 py-3.5 shrink-0"
-            style={{ backgroundColor: "#E45835" }}>
+            style={{ backgroundColor: "#DC2626" }}>
             <h2 id="modal-title" className="text-white font-bold text-lg leading-tight pr-4">
               {product.name}
             </h2>
@@ -670,7 +669,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
               {/* Crudités hint — shown only when the product has a crudités group */}
               {hasCrudites && (
                 <div className="text-white/40 font-sans text-xs flex items-center gap-2 font-sans">
-                  <span className="font-bold text-[#E45835]">+ / -</span>
+                  <span className="font-bold text-[#DC2626]">+ / -</span>
                   <span>Crudités : Salade, Tomate, Oignon</span>
                 </div>
               )}
@@ -679,7 +678,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
               <div>
                 <div
                   className="font-black text-3xl"
-                  style={{ color: "#E45835" }}
+                  style={{ color: "#DC2626" }}
                 >
                   {product.price.toFixed(2)}€
                 </div>
@@ -741,7 +740,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 text-white font-bold transition-all duration-300
                 focus-visible:outline-none focus-visible:ring-2"
                 style={{
-                  background: "linear-gradient(135deg, #E45835, #cf3f1f)",
+                  background: "linear-gradient(135deg, #DC2626, #DC2626)",
                   boxShadow: "0 0 20px rgba(228,88,53,0.5)"
                 }}
               >

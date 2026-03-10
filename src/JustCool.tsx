@@ -157,7 +157,7 @@ export default function JustCool() {
   // ── Cart / UI state ─────────────────────────────────────────────────────────
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
-  const [dineMode, setDineMode] = useState<"surplace" | "emporter">("surplace");
+  const [dineMode, setDineMode] = useState<"surplace" | "emporter">("");
   const [activeCategory, setActiveCategory] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [modalOpen, setModalOpen] = useState(false);

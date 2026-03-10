@@ -68,7 +68,7 @@ type View = "main" | "personalise";
 
 export default function CookieConsent() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [view, setView] = useState<View>("main");
+  const [view, setView] = useState<View>("personalise");
   const [animDir, setAnimDir] = useState<"forward" | "back">("forward");
   const [settings, setSettings] = useState<CookieSettings>({
     essential: true,
@@ -162,7 +162,7 @@ export default function CookieConsent() {
             style={{
               bottom: "1.5rem",
               right: "1.5rem",
-              width: 380,
+              width: "93vw",
               background: "#141414",
               borderRadius: 22,
               padding: "28px 24px 24px",

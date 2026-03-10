@@ -92,9 +92,9 @@ function ErrorBanner({ message }: { message: string }) {
 }
 
 function OptionChip({
-  label, selected, onClick, disabled,
+  label, selected, onClick, disabled, hasError,
 }: {
-  label: string; selected: boolean; onClick: () => void; disabled?: boolean;
+  label: string; selected: boolean; onClick: () => void; disabled?: boolean; hasError?: boolean;
 }) {
   return (
     <button
@@ -104,7 +104,9 @@ function OptionChip({
       className={`h-8 px-3 rounded-full text-xs font-bold transition-all border
         ${selected
           ? "bg-gradient-to-r from-red-600 to-red-700 border-red-600 text-white shadow-[0_0_15px_rgba(204,30,39,0.3)]"
-          : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/40"
+          : hasError
+            ? "error-pulse-chip border-red-500/40 text-red-300/70 hover:bg-white/10 hover:text-white hover:border-white/40"
+            : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/40"
         }
         disabled:opacity-40 disabled:cursor-not-allowed`}
     >
@@ -114,10 +116,10 @@ function OptionChip({
 }
 
 function ImageOption({
-  label, imageSrc, selected, onClick, disabled, price,
+  label, imageSrc, selected, onClick, disabled, price, hasError,
 }: {
   label: string; imageSrc: string; selected: boolean; onClick: () => void;
-  disabled?: boolean; price?: number;
+  disabled?: boolean; price?: number; hasError?: boolean;
 }) {
   return (
     <button
@@ -126,8 +128,10 @@ function ImageOption({
       disabled={disabled && !selected}
       className={`relative flex items-center gap-1 h-[60px] rounded-full border pr-3 w-full overflow-hidden transition-all duration-200
         ${selected
-          ? "border-[#DC2626] bg-[#DC2626]/15 shadow-[0_0_12px_rgba(228,88,53,0.3)]"
-          : "border-white/20 bg-white/5 text-white/70 hover:bg-white/10 hover:border-white/40"
+          ? "border-[#DC2626] bg-[#DC2626] shadow-[0_0_18px_rgba(220,38,38,0.45)]"
+          : hasError
+            ? "error-pulse-img border-red-500/30 text-white/70 hover:border-white/40"
+            : "border-white/20 bg-white/5 text-white/70 hover:bg-white/10 hover:border-white/40"
         }
         disabled:opacity-40 disabled:cursor-not-allowed`}
     >
@@ -142,11 +146,7 @@ function ImageOption({
           <span className="text-white/50 text-xs font-bold">+{price.toFixed(2)}€</span>
         )}
       </div>
-      {selected && (
-        <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
-          <CheckIcon />
-        </div>
-      )}
+
     </button>
   );
 }
@@ -159,8 +159,30 @@ function isSpicyName(name: string) {
   return SPICY_KEYWORDS.some((k) => lower.includes(k));
 }
 
+// ─── Default selections helper ────────────────────────────────────────────────
+// Returns a map of groupId → default selected IDs for a given set of groups.
+
+function buildDefaultSelections(groups: ApiSupplementGroup[]): Record<string, string[]> {
+  const defaults: Record<string, string[]> = {};
+
+  groups.forEach((g) => {
+    // "Choisissez votre pain" → pre-select "Pain Naan" if present
+    if (g.name === "Choisissez votre pain") {
+      const naan = g.supplements.find(
+        (s) => s.is_active && s.name.trim().toLowerCase() === "pain naan"
+      );
+      if (naan) {
+        defaults[g.id] = [naan.id];
+      }
+    }
+    // "Choisissez vos crudités" → start empty (no default, avoids validation error)
+    // Nothing to do — absence of key = empty selection
+  });
+
+  return defaults;
+}
+
 // ─── CruditesGroupSection ─────────────────────────────────────────────────────
-// Special UI for "Choisissez vos crudités" matching the reference design
 
 interface CruditesGroupSectionProps {
   group: ApiSupplementGroup;
@@ -172,17 +194,12 @@ interface CruditesGroupSectionProps {
 function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesGroupSectionProps) {
   const sectionId = `section-group-${group.id}`;
 
-  const PRESET_NAMES = ["aucune crudité", "toutes les crudités"];
-  const activeSupplements = group.supplements
-    .filter((s) => s.is_active && !PRESET_NAMES.includes(s.name.trim().toLowerCase()))
-    .sort((a, b) => a.sort_order - b.sort_order);
-
   const NATURE_SENTINEL = "__nature__";
   const STATIC_ITEMS = ["Salade", "Tomate", "Oignon"];
 
-  // Strip sentinel to get real selections
   const realSelected = selected.filter((id) => id !== NATURE_SENTINEL);
-  const isNatureSelected = selected.includes(NATURE_SENTINEL) || selected.length === 0;
+  // Nature is only active when explicitly chosen (sentinel present), NOT by default
+  const isNatureSelected = selected.includes(NATURE_SENTINEL);
   const isCompletSelected = STATIC_ITEMS.every((label) => realSelected.includes(label));
 
   const handleNature = () => onChange(group.id, [NATURE_SENTINEL]);
@@ -191,7 +208,8 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
   const toggleIndividual = (label: string) => {
     if (realSelected.includes(label)) {
       const next = realSelected.filter((id) => id !== label);
-      onChange(group.id, next.length === 0 ? [NATURE_SENTINEL] : next);
+      // If nothing left, go back to empty (not Nature) so user must re-choose
+      onChange(group.id, next);
     } else {
       onChange(group.id, [...realSelected, label]);
     }
@@ -200,15 +218,15 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
   return (
     <fieldset
       id={sectionId}
-      className={`-mx-3 p-3 rounded-xl transition-all ${hasError ? "section-error" : ""}`}
+      className={`section-box ${hasError ? "section-error" : ""}`}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="section-legend">
         <span className={`font-bold uppercase tracking-widest text-sm transition-colors ${hasError ? "text-red-400" : "text-white"}`}>
           {group.name}
         </span>
         {group.is_required ? (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 border-red-500 bg-red-500/20 text-red-400">
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 ${hasError ? "border-red-500 bg-red-500/20 text-red-400" : "border-red-500 bg-red-500/20 text-red-400"}`}>
             Obligatoire
           </span>
         ) : (
@@ -220,12 +238,6 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
           <span className="text-white/35 text-xs italic">{group.description}</span>
         )}
       </div>
-
-      {hasError && (
-        <div className="mb-3">
-          <ErrorBanner message={`Veuillez choisir une option pour « ${group.name} ».`} />
-        </div>
-      )}
 
       {/* Quick selection label */}
       <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.15em] mb-2">
@@ -247,7 +259,6 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
           <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isNatureSelected ? "text-white" : "text-white/60"}`}>
             Nature
           </span>
-          {/* emojis + barre (uniquement Nature) */}
           <span className="relative text-2xl leading-none select-none inline-block">
             🥬🍅🧅
             <span className="pointer-events-none absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 -rotate-[18deg] bg-white/70" />
@@ -326,7 +337,6 @@ interface GroupSectionProps {
 }
 
 function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps) {
-  // Special UI for crudités
   if (group.name === "Choisissez vos crudités") {
     return (
       <CruditesGroupSection
@@ -337,7 +347,7 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
       />
     );
   }
-  if(group.name=="Ou sélection individuelle"){
+  if (group.name === "Ou sélection individuelle") {
     return null;
   }
 
@@ -368,18 +378,21 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
   return (
     <fieldset
       id={sectionId}
-      className={`p-3 -mx-3 rounded-xl transition-all ${hasError ? "section-error" : ""}`}
+      className={`section-box ${hasError ? "section-error" : ""}`}
     >
-      <div className="flex items-center gap-2 mb-4 flex-wrap">
+      <div className="section-legend">
         <span className={`font-bold uppercase tracking-widest text-sm transition-colors ${hasError ? "text-red-400" : "text-white"}`}>
           {group.name}
         </span>
 
+        {isMulti && (
+          <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">
+            MAX {group.max_selection}
+          </span>
+        )}
+
         {group.is_required ? (
-          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 transition-colors
-            ${hasError
-             ? "border-red-500 bg-red-500/20 text-red-400"
-: "border-red-500 bg-red-500/20 text-red-400"}`}>
+          <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 ${hasError ? "border-red-500/80 bg-red-500/10 text-red-400" : "border-red-500/80 bg-red-500/10 text-red-400"}`}>
             Obligatoire
           </span>
         ) : (
@@ -389,23 +402,10 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
           </span>
         )}
 
-        {isMulti && (
-<span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">            MAX {group.max_selection}
-          </span>
-        )}
-
         {group.description && (
           <span className="text-white/35 text-xs italic">{group.description}</span>
         )}
       </div>
-
-      {hasError && (
-        <div className="mb-3">
-          <ErrorBanner
-            message={`Veuillez choisir ${isRadio ? "une option" : "au moins une option"} pour « ${group.name} ».`}
-          />
-        </div>
-      )}
 
       {hasImages ? (
         <div className="grid grid-cols-2 gap-1.5">
@@ -417,6 +417,7 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
               selected={selected.includes(sup.id)}
               price={sup.price > 0 ? sup.price : undefined}
               disabled={atMax && !selected.includes(sup.id)}
+              hasError={hasError && !selected.includes(sup.id)}
               onClick={() => toggle(sup.id)}
             />
           ))}
@@ -429,14 +430,12 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
                 label={sup.name.trim()}
                 selected={selected.includes(sup.id)}
                 disabled={atMax && !selected.includes(sup.id)}
+                hasError={hasError && !selected.includes(sup.id)}
                 onClick={() => toggle(sup.id)}
               />
               {isSpicyName(sup.name) && <FlameIcon />}
               {sup.price > 0 && (
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: "#DC2626" }}
-                >
+                <span className="text-xs font-semibold" style={{ color: "#DC2626" }}>
                   +{sup.price.toFixed(2)}€
                 </span>
               )}
@@ -461,12 +460,12 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
   const supplementGroups: ApiSupplementGroup[] =
     (product as any)?.supplementGroups ?? [];
 
-  // ── Reset when product changes ────────────────────────────────────────────
+  // ── Reset when product changes — apply smart defaults ─────────────────────
   useEffect(() => {
     if (product) {
       setQuantity(1);
-      setGroupSelections({});
       setErrors(new Set());
+      setGroupSelections(buildDefaultSelections(supplementGroups));
       setTimeout(() => { scrollRef.current?.scrollTo({ top: 0 }); }, 50);
     }
   }, [product]);
@@ -479,7 +478,10 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
       supplementGroups.forEach((g) => {
         if (!g.is_required) return;
         const sel = groupSelections[g.id] ?? [];
-        if (sel.length >= Math.max(1, g.min_selection)) next.delete(g.id);
+        // NATURE sentinel or non-empty selection both count as valid
+        if (sel.includes("__nature__") || sel.length >= Math.max(1, g.min_selection)) {
+          next.delete(g.id);
+        }
       });
       return next;
     });
@@ -514,7 +516,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
     return extra;
   })();
 
-  // ── Total price shown in modal (base + supplements) × quantity ────────────
   const totalPrice = product ? (product.price + supplementSurcharge) * quantity : 0;
 
   // ── Validation + scroll-to-error ──────────────────────────────────────────
@@ -523,8 +524,8 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
 
     const failedGroups = supplementGroups.filter((g) => {
       if (!g.is_required) return false;
-      const sel = (groupSelections[g.id] ?? []);
-      // NATURE sentinel counts as a valid "none" selection
+      const sel = groupSelections[g.id] ?? [];
+      // NATURE sentinel = valid "none" selection for crudités
       if (sel.includes("__nature__")) return false;
       return sel.length < Math.max(1, g.min_selection);
     });
@@ -542,7 +543,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
       return;
     }
 
-    // Build human-readable supplement names
     const allSelectedNames: string[] = [];
     const namedGroupSelections: Record<string, string[]> = {};
 
@@ -596,13 +596,40 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
           60%     { transform: translateX(-4px); }
           80%     { transform: translateX(4px); }
         }
-        @keyframes error-highlight {
-          0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
-          30%  { box-shadow: 0 0 0 4px rgba(239,68,68,0.35); }
-          100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        @keyframes pulse-red {
+          0%, 100% { background-color: rgba(220, 38, 38, 0); }
+          50%       { background-color: rgba(220, 38, 38, 0.12); }
+        }
+        .error-pulse-chip {
+          animation: pulse-red 1.4s ease-in-out infinite;
+        }
+        .error-pulse-img {
+          animation: pulse-red 1.4s ease-in-out infinite;
         }
         .modal-animate { animation: modal-in 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
-        .section-error { animation: error-highlight 0.9s ease forwards; border-radius: 12px; }
+        .section-box {
+          position: relative;
+          border-radius: 12px;
+          border: 1.5px solid rgba(255,255,255,0.08);
+          padding: 0 1rem 1rem 1rem;
+        }
+        .section-box.section-error {
+          border-color: rgba(220, 38, 38, 0.85);
+          box-shadow: 0 0 20px rgba(220,38,38,0.12);
+        }
+        .section-legend {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          /* Pull up to sit on the top border */
+          margin-top: -0.65rem;
+          margin-bottom: 1rem;
+          padding: 0 0.25rem;
+          /* Background matches modal bg so it "cuts" the border */
+          background: #09090b;
+          width: fit-content;
+        }
       `}</style>
 
       {/* Backdrop */}
@@ -618,7 +645,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
           className="modal-animate relative flex flex-col bg-zinc-950 w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl"
           style={{ maxHeight: "90dvh" }}
         >
-
           {/* ── Header ── */}
           <div className="flex items-center justify-between px-4 py-3.5 shrink-0"
             style={{ backgroundColor: "#DC2626" }}>
@@ -639,7 +665,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
           <div ref={scrollRef} className="flex-1 overflow-y-auto modal-scrollbar overscroll-contain">
             <div className="p-5 space-y-6">
 
-              {/* Product image */}
               {product.imageSrc && (
                 <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-black">
                   <img
@@ -651,7 +676,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 </div>
               )}
 
-              {/* Description */}
               {(product.mainIngredient || product.description) && (
                 <div className="space-y-1 px-1">
                   {product.mainIngredient && (
@@ -666,26 +690,22 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 </div>
               )}
 
-              {/* Crudités hint — shown only when the product has a crudités group */}
               {hasCrudites && (
-                <div className="text-white/40 font-sans text-xs flex items-center gap-2 font-sans">
+                <div className="text-white/40 font-sans text-xs flex items-center gap-2">
                   <span className="font-bold text-[#DC2626]">+ / -</span>
                   <span>Crudités : Salade, Tomate, Oignon</span>
                 </div>
               )}
 
-              {/* Price */}
               <div>
-                <div
-                  className="font-black text-3xl"
-                  style={{ color: "#DC2626" }}
-                >
+                <div className="font-black text-3xl" style={{ color: "#DC2626" }}>
                   {product.price.toFixed(2)}€
                 </div>
-                <div className="text-xs text-white/50 italic mb-4">Allergènes : voir <a className="text-red-600 underline decoration-dotted underline-offset-2 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm" href="/#">tableau</a> ou en restaurant</div>
+                <div className="text-xs text-white/50 italic mb-4">
+                  Allergènes : voir <a className="text-red-600 underline decoration-dotted underline-offset-2 font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm" href="/#">tableau</a> ou en restaurant
+                </div>
               </div>
 
-              {/* ── Dynamic supplement groups ── */}
               {visibleGroups.length > 0 && (
                 <>
                   <Separator />
@@ -710,15 +730,12 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                   Aucune option de personnalisation disponible.
                 </p>
               )}
-
             </div>
           </div>
 
           {/* ── Footer ── */}
           <div className="px-4 py-3.5 bg-black/60 backdrop-blur-md border-t border-white/10 shrink-0">
             <div className="flex items-center gap-3">
-
-              {/* Quantity */}
               <div className="flex items-center gap-2 bg-white/5 rounded-full px-1.5 py-1 border border-white/10 shrink-0">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -733,12 +750,9 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                 >+</button>
               </div>
 
-              {/* Add to cart */}
               <button
                 onClick={handleAdd}
-                className="flex-1 flex items-center justify-between h-12 px-5 rounded-lg
-                text-white font-bold transition-all duration-300
-                focus-visible:outline-none focus-visible:ring-2"
+                className="flex-1 flex items-center justify-between h-12 px-5 rounded-lg text-white font-bold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2"
                 style={{
                   background: "linear-gradient(135deg, #DC2626, #DC2626)",
                   boxShadow: "0 0 20px rgba(228,88,53,0.5)"
@@ -749,7 +763,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </>

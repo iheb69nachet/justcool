@@ -111,7 +111,7 @@ export function NeonText({
       <text
         x="5"
         y={height * 0.75}
-        fontFamily="var(--font-lucida)"
+        fontFamily="lucida, lucida Fallback"
         fontSize={fontSize}
         fill="black"
         filter={`url(#${filterId})`}

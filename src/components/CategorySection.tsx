@@ -246,7 +246,12 @@ export default function CategorySection({
           <span
             aria-hidden="true"
             className="uppercase text-[2.25rem] font-bold tracking-wider text-white font-zamenhof-inverse"
-            style={{ textShadow: "rgb(255 255 255) 0px 0px 20px" }}
+            // style={{ textShadow: "rgb(255 255 255) 0px 0px 20px" }}
+              style={{
+    fontFamily: "Zamenhof Inverse, sans-serif",
+    WebkitTextStroke: "0.1px white",
+  textShadow: "rgb(255 255 255) 0px 0px 20px"
+  }}
           >
             Just
           </span>

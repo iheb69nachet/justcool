@@ -3,10 +3,10 @@ import { useEffect, useRef } from "react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface CartItem {
-  id: string;          // unique cart line id (product id + options hash)
+  id: string;
   productId: string;
   name: string;
-  price: number;       // unit price = base price + supplementSurcharge
+  price: number;
   quantity: number;
   options: {
     bread?: string;
@@ -16,7 +16,7 @@ export interface CartItem {
     isStudent?: boolean;
     supplements?: string[];
     groupSelections?: Record<string, string[]>;
-    supplementSurcharge?: number; // ← per-unit surcharge baked into price
+    supplementSurcharge?: number;
   };
 }
 
@@ -26,8 +26,26 @@ interface CartDrawerProps {
   items: CartItem[];
   onUpdateQty: (id: string, qty: number) => void;
   onRemove: (id: string) => void;
-  dineMode: "surplace" | "emporter";
+  dineMode: "surplace" | "emporter" | null;
   onDineModeChange: (mode: "surplace" | "emporter") => void;
+}
+
+// ─── Opening hours ────────────────────────────────────────────────────────────
+// Open: 11:00 → 00:30 (next day)
+
+function getRestaurantStatus(): { isOpen: boolean; nextOpenTime: string } {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const totalMinutes = h * 60 + m;
+
+  const openAt  = 11 * 60;  // 11:00 → 660 min
+  const closeAt = 30;       // 00:30 → 30 min (next day)
+
+  // Open if: after 11:00 OR before 00:30 (midnight rollover)
+  const isOpen = totalMinutes >= openAt || totalMinutes < closeAt;
+
+  return { isOpen, nextOpenTime: "11:00", closeTime: "21:00" };
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -83,6 +101,15 @@ const WhatsAppIcon = () => (
   </svg>
 );
 
+const AlertCircleIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="8" x2="12" y2="12" />
+    <line x1="12" y1="16" x2="12.01" y2="16" />
+  </svg>
+);
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatPrice(n: number) {
@@ -96,24 +123,21 @@ function buildOptionSummary(options: CartItem["options"]): string[] {
   if (options.crudites?.length) lines.push(`Crudités: ${options.crudites.join(", ")}`);
   if (options.menuFormule) lines.push("Formule menu");
   if (options.isStudent) lines.push("Tarif étudiant");
-
-  // Named group selections
   const gs = options.groupSelections;
   if (gs && Object.keys(gs).length > 0) {
-    Object.entries(gs).forEach(([groupName, items]) => {
+    Object.entries(gs).forEach(([_, items]) => {
       if (Array.isArray(items) && items.length) {
-        lines.push(`${groupName}: ${items.join(", ")}`);
+        lines.push(items.join(", "));
       }
     });
   } else if (options.supplements?.length) {
-    lines.push(`Suppléments: ${options.supplements.join(", ")}`);
+    lines.push(options.supplements.join(", "));
   }
-
   return lines;
 }
 
 function buildWhatsAppMessage(items: CartItem[], dineMode: "surplace" | "emporter") {
-  const mode = dineMode === "surplace" ? "Sur Place" : "À Emporter";
+  const mode = dineMode === "surplace" ? "Sur Place" : dineMode === "emporter" ? "À Emporter" : "";
   const lines = items.map((item) => {
     const opts = buildOptionSummary(item.options);
     const optStr = opts.length ? `\n    • ${opts.join("\n    • ")}` : "";
@@ -121,31 +145,24 @@ function buildWhatsAppMessage(items: CartItem[], dineMode: "surplace" | "emporte
   });
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
   return encodeURIComponent(
-    `Bonjour Mange moi 👋\n\nJe souhaite commander (${mode}) :\n\n${lines.join("\n\n")}\n\n*Total : ${formatPrice(total)}*`
+    `Bonjour Just Cool 👋\n\nJe souhaite commander (${mode}) :\n\n${lines.join("\n\n")}\n\n*Total : ${formatPrice(total)}*`
   );
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function CartDrawer({
-  isOpen,
-  onClose,
-  items,
-  onUpdateQty,
-  onRemove,
-  dineMode,
-  onDineModeChange,
+  isOpen, onClose, items, onUpdateQty, onRemove, dineMode, onDineModeChange,
 }: CartDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null);
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const isEmpty = items.length === 0;
 
+  const { isOpen: isRestaurantOpen, nextOpenTime } = getRestaurantStatus();
+  const canOrder = isRestaurantOpen && !isEmpty && dineMode !== null;
+
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = isOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
@@ -164,249 +181,195 @@ export default function CartDrawer({
     <>
       <style>{`
         .cart-drawer-backdrop {
-          position: fixed;
-          inset: 0;
-          z-index: 140;
+          position: fixed; inset: 0; z-index: 140;
           background: rgba(0,0,0,0.6);
           backdrop-filter: blur(2px);
-          opacity: 0;
-          pointer-events: none;
+          opacity: 0; pointer-events: none;
           transition: opacity 0.3s ease;
         }
-        .cart-drawer-backdrop.open {
-          opacity: 1;
-          pointer-events: auto;
-        }
+        .cart-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
 
         .cart-drawer {
-          position: fixed;
-          inset-block: 0;
-          right: 0;
-          z-index: 150;
-          height: 100%;
-          width: 100%;
-          max-width: 28rem;
-          display: flex;
-          flex-direction: column;
+          position: fixed; inset-block: 0; right: 0; z-index: 150;
+          height: 100%; width: 100%; max-width: 28rem;
+          display: flex; flex-direction: column;
           background: rgba(0,0,0,0.65);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
+          backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
           border-left: 1px solid rgba(255,255,255,0.1);
           box-shadow: -8px 0 40px rgba(0,0,0,0.5);
           transform: translateX(100%);
           transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
           will-change: transform;
         }
-        .cart-drawer.open {
-          transform: translateX(0);
-        }
+        .cart-drawer.open { transform: translateX(0); }
 
         .cart-scrollarea {
-          flex: 1;
-          overflow-y: auto;
-          overscroll-behavior: contain;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255,255,255,0.12) transparent;
+          flex: 1; overflow-y: auto; overscroll-behavior: contain;
+          scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.12) transparent;
         }
         .cart-scrollarea::-webkit-scrollbar { width: 4px; }
         .cart-scrollarea::-webkit-scrollbar-track { background: transparent; }
         .cart-scrollarea::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
 
         .cart-item {
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          border-radius: 0.75rem;
-          padding: 0.75rem;
-          display: flex;
-          gap: 0.75rem;
-          transition: background 0.2s;
+          background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 0.75rem; padding: 0.75rem;
+          display: flex; gap: 0.75rem; transition: background 0.2s;
         }
         .cart-item:hover { background: rgba(255,255,255,0.09); }
 
         .qty-btn {
           width: 1.75rem; height: 1.75rem;
           display: flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.1);
-          border: none;
-          border-radius: 0.375rem;
-          color: #fff;
-          cursor: pointer;
+          background: rgba(255,255,255,0.1); border: none;
+          border-radius: 0.375rem; color: #fff; cursor: pointer;
           transition: background 0.15s;
         }
         .qty-btn:hover { background: rgba(255,255,255,0.22); }
         .qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .dine-toggle {
-          display: flex;
-          background: rgba(39,39,42,0.5);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(255,255,255,0.05);
-          border-radius: 0.75rem;
-          padding: 0.25rem;
-          margin-bottom: 0.75rem;
+          display: flex; background: rgba(39,39,42,0.5);
+          backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.05);
+          border-radius: 0.75rem; padding: 0.25rem; margin-bottom: 0.75rem;
         }
         .dine-btn {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.4rem;
-          border: none;
-          border-radius: 0.6rem;
-          font-size: 0.875rem;
-          font-weight: 700;
-          padding: 0.6rem 1rem;
-          cursor: pointer;
-          transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+          flex: 1; display: flex; align-items: center; justify-content: center;
+          gap: 0.4rem; border: none; border-radius: 0.6rem;
+          font-size: 0.875rem; font-weight: 700; padding: 0.6rem 1rem;
+          cursor: pointer; transition: background 0.2s, color 0.2s, box-shadow 0.2s;
         }
-        .dine-btn-inactive {
-          background: transparent;
-          color: rgba(255,255,255,0.45);
-        }
+        .dine-btn-inactive { background: transparent; color: rgba(255,255,255,0.45); }
         .dine-btn-inactive:hover { color: #fff; }
         .dine-btn-active {
-  background: linear-gradient(135deg, #e53e3e, #e53e3e);
-  color: #fff;
-  box-shadow: 0 2px 12px rgba(228,88,53,0.4);
-}
+          background: linear-gradient(135deg, #e53e3e, #e53e3e);
+          color: #fff; box-shadow: 0 2px 12px rgba(228,88,53,0.4);
+        }
+
+        /* ── Closed banner ── */
+        .closed-banner {
+          display: flex; align-items: center; gap: 0.65rem;
+          padding: 0.85rem 1rem;
+          border: 1.5px solid rgba(220, 38, 38, 0.7);
+          border-radius: 0.75rem;
+          background: rgba(220, 38, 38, 0.08);
+          box-shadow: 0 0 18px rgba(220,38,38,0.12);
+          color: #ef4444;
+          font-size: 0.8rem;
+          font-weight: 800;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          margin-bottom: 0.75rem;
+        }
+        .closed-banner .dot {
+          width: 5px; height: 5px; border-radius: 50%;
+          background: #ef4444; flex-shrink: 0;
+          box-shadow: 0 0 6px #ef4444;
+        }
+
+        /* ── Disabled order buttons ── */
+        .order-btn-disabled {
+          width: 100%; height: 3.5rem;
+          display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+          background: rgba(255,255,255,0.06);
+          color: rgba(255,255,255,0.35);
+          font-weight: 700; font-size: 0.875rem;
+          letter-spacing: 0.07em; text-transform: uppercase;
+          border: none; border-radius: 0.75rem;
+          cursor: not-allowed;
+        }
 
         .wa-btn {
-          width: 100%;
-          height: 3.5rem;
+          width: 100%; height: 3.5rem;
           display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-          background: #25D366;
-          color: #000;
-          font-weight: 700;
-          font-size: 0.875rem;
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
-          border: none;
-          border-radius: 0.75rem;
-          cursor: pointer;
+          background: #25D366; color: #000;
+          font-weight: 700; font-size: 0.875rem;
+          letter-spacing: 0.07em; text-transform: uppercase;
+          border: none; border-radius: 0.75rem; cursor: pointer;
           text-decoration: none;
           transition: background 0.2s, transform 0.15s;
         }
         .wa-btn:hover { background: #22c35e; transform: translateY(-1px); }
         .wa-btn:active { transform: translateY(0); }
-        .wa-btn:disabled { opacity: 0.45; pointer-events: none; }
 
         .phone-btn {
-          width: 100%;
-          height: 3.5rem;
+          width: 100%; height: 3.5rem;
           display: flex; align-items: center; justify-content: center; gap: 0.6rem;
-          background: transparent;
-          color: #fff;
-          font-weight: 700;
-          font-size: 0.875rem;
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
+          background: transparent; color: #fff;
+          font-weight: 700; font-size: 0.875rem;
+          letter-spacing: 0.07em; text-transform: uppercase;
           border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 0.75rem;
-          cursor: pointer;
-          text-decoration: none;
+          border-radius: 0.75rem; cursor: pointer; text-decoration: none;
           transition: background 0.2s, border-color 0.2s;
         }
         .phone-btn:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.4); }
 
         .close-btn {
-          position: absolute;
-          top: 0.375rem; right: 0.5rem;
+          position: absolute; top: 0.375rem; right: 0.5rem;
           width: 3rem; height: 3rem;
           display: flex; align-items: center; justify-content: center;
-          background: transparent;
-          border: none;
-          color: rgba(255,255,255,0.6);
-          border-radius: 9999px;
-          cursor: pointer;
+          background: transparent; border: none; color: rgba(255,255,255,0.6);
+          border-radius: 9999px; cursor: pointer;
           transition: background 0.15s, color 0.15s;
         }
         .close-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
 
         .trash-btn {
-          background: transparent;
-          border: none;
-          color: rgba(255,255,255,0.35);
-          cursor: pointer;
-          padding: 0.25rem;
-          border-radius: 0.375rem;
-          transition: color 0.2s;
-          display: flex; align-items: center;
+          background: transparent; border: none; color: rgba(255,255,255,0.35);
+          cursor: pointer; padding: 0.25rem; border-radius: 0.375rem;
+          transition: color 0.2s; display: flex; align-items: center;
         }
         .trash-btn:hover { color: #dc2626; }
 
         .empty-state {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 1rem;
-          padding: 2rem;
-          color: rgba(255,255,255,0.35);
-          text-align: center;
+          flex: 1; display: flex; flex-direction: column;
+          align-items: center; justify-content: center;
+          gap: 1rem; padding: 2rem;
+          color: rgba(255,255,255,0.35); text-align: center;
         }
         .empty-bag {
           width: 4rem; height: 4rem;
           display: flex; align-items: center; justify-content: center;
-          background: rgba(255,255,255,0.05);
-          border-radius: 9999px;
+          background: rgba(255,255,255,0.05); border-radius: 9999px;
         }
       `}</style>
 
       {/* Backdrop */}
-      <div
-        className={`cart-drawer-backdrop ${isOpen ? "open" : ""}`}
-        onClick={onClose}
-        aria-hidden="true"
-      />
+      <div className={`cart-drawer-backdrop ${isOpen ? "open" : ""}`} onClick={onClose} aria-hidden="true" />
 
       {/* Drawer */}
       <div
         ref={drawerRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="cart-title"
-        aria-describedby="cart-desc"
+        role="dialog" aria-modal="true"
+        aria-labelledby="cart-title" aria-describedby="cart-desc"
         className={`cart-drawer ${isOpen ? "open" : ""}`}
         tabIndex={-1}
       >
         {/* Header */}
-        <div
-          style={{ position: "relative", background: "rgba(255,255,255,0.04)" }}
-          className="flex flex-col gap-1 p-4 border-b border-white/10"
-        >
+        <div style={{ position: "relative", background: "rgba(255,255,255,0.04)" }}
+          className="flex flex-col gap-1 p-4 border-b border-white/10">
           <div className="flex items-center gap-2" id="cart-title">
             <span className="text-[#e53e3e]"><BagIcon /></span>
             <h3 className="font-bold text-white text-xl">Mon Panier</h3>
             {!isEmpty && (
               <span style={{
                 marginLeft: "auto",
-                background: "rgba(228,88,53,0.15)",
-border: "1px solid rgba(228,88,53,0.3)",
-color: "#e53e3e",
-                fontSize: "0.75rem",
-                fontWeight: 700,
-                padding: "2px 10px",
-                borderRadius: "9999px",
-                marginRight: "3rem",
+                background: "rgba(228,88,53,0.15)", border: "1px solid rgba(228,88,53,0.3)",
+                color: "#e53e3e", fontSize: "0.75rem", fontWeight: 700,
+                padding: "2px 10px", borderRadius: "9999px", marginRight: "3rem",
               }}>
                 {items.reduce((s, i) => s + i.quantity, 0)} article{items.reduce((s, i) => s + i.quantity, 0) > 1 ? "s" : ""}
               </span>
             )}
           </div>
           <p id="cart-desc" className="sr-only">Récapitulatif de votre commande et validation du panier.</p>
-
-          <button className="close-btn" onClick={onClose} aria-label="Fermer le panier">
-            <CloseIcon />
-          </button>
+          <button className="close-btn" onClick={onClose} aria-label="Fermer le panier"><CloseIcon /></button>
         </div>
 
         {/* Body */}
         {isEmpty ? (
           <div className="empty-state">
-            <div className="empty-bag">
-              <BagIcon />
-            </div>
+            <div className="empty-bag"><BagIcon /></div>
             <div>
               <p style={{ fontWeight: 600, color: "rgba(255,255,255,0.6)", marginBottom: "0.25rem" }}>Votre panier est vide</p>
               <p style={{ fontSize: "0.875rem" }}>Ajoutez des plats depuis le menu !</p>
@@ -421,59 +384,42 @@ color: "#e53e3e",
                   <li key={item.id}>
                     <div className="cart-item">
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        {/* Name + price */}
                         <div className="flex justify-between items-start">
                           <h4 style={{
                             fontWeight: 700, color: "#fff", fontSize: "0.875rem",
                             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                             paddingRight: "0.5rem", flex: 1,
-                          }}>
-                            {item.name}
-                          </h4>
+                          }}>{item.name}</h4>
                           <span style={{ fontWeight: 900, color: "#e53e3e", fontSize: "0.875rem", flexShrink: 0 }}>
                             {formatPrice(item.price * item.quantity)}
                           </span>
                         </div>
-
-                        {/* Options summary */}
                         {summary.length > 0 && (
                           <div style={{ color: "rgba(255,255,255,0.55)", fontSize: "0.75rem", marginTop: "0.25rem", lineHeight: 1.6 }}>
                             {summary.map((l, i) => <p key={i}>{l}</p>)}
                           </div>
                         )}
-
-                        {/* Quantity + delete */}
                         <div className="flex items-center justify-between" style={{ marginTop: "0.75rem" }}>
                           <div style={{
                             display: "flex", alignItems: "center", gap: "0.75rem",
                             background: "rgba(0,0,0,0.4)", borderRadius: "0.5rem",
                             padding: "0.25rem", border: "1px solid rgba(255,255,255,0.05)",
                           }}>
-                            <button
-                              className="qty-btn"
+                            <button className="qty-btn"
                               onClick={() => item.quantity <= 1 ? onRemove(item.id) : onUpdateQty(item.id, item.quantity - 1)}
-                              aria-label={`Diminuer la quantité de ${item.name}`}
-                            >
+                              aria-label={`Diminuer la quantité de ${item.name}`}>
                               <MinusIcon />
                             </button>
                             <span style={{ fontSize: "0.875rem", fontWeight: 600, minWidth: "1rem", textAlign: "center" }}
-                              aria-live="polite">
-                              {item.quantity}
-                            </span>
-                            <button
-                              className="qty-btn"
+                              aria-live="polite">{item.quantity}</span>
+                            <button className="qty-btn"
                               onClick={() => onUpdateQty(item.id, item.quantity + 1)}
-                              aria-label={`Augmenter la quantité de ${item.name}`}
-                            >
+                              aria-label={`Augmenter la quantité de ${item.name}`}>
                               <PlusIcon />
                             </button>
                           </div>
-
-                          <button
-                            className="trash-btn"
-                            onClick={() => onRemove(item.id)}
-                            aria-label={`Supprimer ${item.name} du panier`}
-                          >
+                          <button className="trash-btn" onClick={() => onRemove(item.id)}
+                            aria-label={`Supprimer ${item.name} du panier`}>
                             <TrashIcon />
                           </button>
                         </div>
@@ -487,20 +433,15 @@ color: "#e53e3e",
         )}
 
         {/* Footer */}
-        <div
-          className="p-4 border-t border-white/10 space-y-4"
-          style={{ background: "rgba(255,255,255,0.04)" }}
-        >
+        <div className="p-4 border-t border-white/10 space-y-4"
+          style={{ background: "rgba(255,255,255,0.04)" }}>
+
           {/* Dine mode toggle */}
           <div className="dine-toggle" role="radiogroup" aria-label="Mode de consommation">
             {(["surplace", "emporter"] as const).map((mode) => (
-              <button
-                key={mode}
-                role="radio"
-                aria-checked={dineMode === mode}
+              <button key={mode} role="radio" aria-checked={dineMode === mode}
                 className={`dine-btn ${dineMode === mode ? "dine-btn-active" : "dine-btn-inactive"}`}
-                onClick={() => onDineModeChange(mode)}
-              >
+                onClick={() => onDineModeChange(mode)}>
                 <span aria-hidden="true">{mode === "surplace" ? "🍽️" : "🛍️"}</span>
                 {mode === "surplace" ? "Sur Place" : "À Emporter"}
               </button>
@@ -515,24 +456,44 @@ color: "#e53e3e",
             </span>
           </div>
 
+          {/* Closed banner */}
+          {!isRestaurantOpen && (
+            <div className="closed-banner" role="alert">
+              <AlertCircleIcon />
+              <span>RESTO FERMÉ</span>
+              <div className="dot" />
+              <span>RÉOUVERTURE À {nextOpenTime}</span>
+            </div>
+          )}
+
           {/* CTA buttons */}
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            <a
-              href={isEmpty ? undefined : waUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="wa-btn"
-              style={isEmpty ? { opacity: 0.45, pointerEvents: "none" } : {}}
-              aria-disabled={isEmpty}
-            >
-              <WhatsAppIcon />
-              Commander sur WhatsApp
-            </a>
+            {canOrder ? (
+              <a href={waUrl} target="_blank" rel="noopener noreferrer" className="wa-btn">
+                <WhatsAppIcon />
+                Commander sur WhatsApp
+              </a>
+            ) : (
+              <div className="order-btn-disabled" aria-disabled="true">
+                {!isRestaurantOpen
+                  ? `RÉOUVERTURE À ${nextOpenTime}`
+                  : !dineMode
+                    ? "CHOISISSEZ SUR PLACE OU À EMPORTER"
+                    : "Commander sur WhatsApp"}
+              </div>
+            )}
 
-            <a href="tel:0497125303" className="phone-btn">
-              <span style={{ color: "rgba(255,255,255,0.5)" }}><PhoneIcon /></span>
-              Appeler (04 97 12 53 03)
-            </a>
+            {canOrder ? (
+              <a href="tel:0497125303" className="phone-btn">
+                <span style={{ color: "rgba(255,255,255,0.5)" }}><PhoneIcon /></span>
+                Appeler (04 97 12 53 03)
+              </a>
+            ) : (
+              <div className="order-btn-disabled" aria-disabled="true">
+                <span style={{ opacity: 0.5 }}><PhoneIcon /></span>
+                APPEL INDISPONIBLE
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,19 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import FloatingMenu from "./FloatingMenu";
 import logoMangeMoi from "../assets/logomangemoi.png";
 
 const ShoppingBagIcon = ({ size = 28 }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M16 10a4 4 0 0 1-8 0" />
     <path d="M3.103 6.034h17.794" />
     <path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" />
@@ -21,37 +11,14 @@ const ShoppingBagIcon = ({ size = 28 }) => (
 );
 
 const MenuIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M4 5h16" />
-    <path d="M4 12h16" />
-    <path d="M4 19h16" />
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 5h16" /><path d="M4 12h16" /><path d="M4 19h16" />
   </svg>
 );
 
 const CloseIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M18 6L6 18" />
-    <path d="M6 6l12 12" />
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M18 6 6 18" /><path d="m6 6 12 12" />
   </svg>
 );
 
@@ -64,42 +31,131 @@ export default function Header({
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
+
   return (
     <>
       <style>{`
-        .mobile-drawer {
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-                      opacity 0.3s ease;
-          opacity: 0;
+        /* ── Sheet overlay ── */
+        .sheet-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 149;
+          background: rgba(0, 0, 0, 0);
+          pointer-events: none;
+          transition: background 0.3s ease;
         }
-        .mobile-drawer.open {
-          max-height: 400px;
-          opacity: 1;
+        .sheet-overlay.open {
+          background: rgba(0, 0, 0, 0.5);
+          pointer-events: all;
         }
-        .mobile-nav-link {
+
+        /* ── Sheet panel — slides from right ── */
+        .sheet-panel {
+          position: fixed;
+          inset-block: 0;
+          right: 0;
+          height: 100%;
+          width: 70%;
+          max-width: 70%;
+          z-index: 150;
           display: flex;
+          flex-direction: column;
+          background: rgba(8, 8, 8, 0.45);
+          backdrop-filter: blur(32px) saturate(160%) brightness(0.8);
+          -webkit-backdrop-filter: blur(32px) saturate(160%) brightness(0.8);
+          border-left: 1px solid rgba(255, 255, 255, 0.07);
+          box-shadow: -8px 0 60px rgba(0,0,0,0.55), inset 1px 0 0 rgba(255,255,255,0.04);
+          transform: translateX(100%);
+          transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 0;
+        }
+        .sheet-panel.open {
+          transform: translateX(0);
+          transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ── Sheet header row ── */
+        .sheet-header-row {
+          display: flex;
+          flex-direction: row;
           align-items: center;
-          padding: 1rem 1.5rem;
-          color: #d1d5db;
-          font-size: 1rem;
-          font-weight: 600;
-          letter-spacing: 0.03em;
-          border-bottom: 1px solid #1f1f1f;
-          text-decoration: none;
-          transition: color 0.2s, background 0.2s, padding-left 0.2s;
+          justify-content: space-between;
+          height: 3.75rem;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 0 0 0 0;
+          flex-shrink: 0;
         }
-        .mobile-nav-link:hover {
+
+        /* ── Sheet close button ── */
+        .sheet-close-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 3rem;
+          height: 3rem;
+          border-radius: 9999px;
+          background: transparent;
+          border: none;
           color: #fff;
-          background: #111;
-          padding-left: 2rem;
+          cursor: pointer;
+          position: absolute;
+          right: 0.5rem;
+          top: 6px;
+          transition: background 0.2s;
+          flex-shrink: 0;
         }
-        .mobile-nav-link .arrow {
-          margin-left: auto;
-          opacity: 0.4;
-          font-size: 0.8rem;
+        .sheet-close-btn:hover { background: rgba(255,255,255,0.08); }
+
+        /* ── Sheet body ── */
+        .sheet-body {
+          display: flex;
+          flex-direction: column;
+          height: calc(100vh - 3.75rem);
+          padding: 2rem;
         }
+
+        /* ── Nav links ── */
+        .sheet-nav-link {
+          display: block;
+          text-align: center;
+          color: #fff;
+          font-size: 1.875rem;
+          font-weight: 500;
+          text-decoration: none;
+          transition: color 0.2s;
+        }
+        .sheet-nav-link:hover { color: #ef4444; }
+
+        /* ── Commander CTA ── */
+        .sheet-commander-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          max-width: 20rem;
+          margin: 0 auto;
+          background: linear-gradient(to right, #dc2626, #b91c1c);
+          color: #fff;
+          font-weight: 700;
+          font-size: 1.5rem;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          padding: 1.5rem 1rem;
+          border-radius: 1rem;
+          text-decoration: none;
+          box-shadow: 0 0 30px rgba(220, 38, 38, 0.4);
+          transition: all 0.3s;
+        }
+        .sheet-commander-btn:hover {
+          background: linear-gradient(to right, #ef4444, #dc2626);
+          box-shadow: 0 0 30px rgba(220, 38, 38, 0.8);
+        }
+
+        /* ── Desktop styles ── */
         .desktop-nav-link {
           position: relative;
           color: #d1d5db;
@@ -120,8 +176,7 @@ export default function Header({
         .desktop-nav-link:hover { color: #fff; }
         .desktop-nav-link:hover::after { width: 100%; }
         .commander-btn {
-          background: linear-gradient(135deg, 
-          #e53e3e, #e53e3e);
+          background: linear-gradient(to right, #dc2626, #b91c1c);
           color: #fff;
           font-weight: 700;
           font-size: 0.875rem;
@@ -135,12 +190,11 @@ export default function Header({
           white-space: nowrap;
         }
         .commander-btn:hover {
-          background: linear-gradient(135deg, #ef4444, #e53e3e);
+          background: linear-gradient(to right, #ef4444, #dc2626);
           box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
           transform: translateY(-1px);
         }
         .commander-btn:active { transform: translateY(0); }
-      
         .cart-btn {
           position: relative;
           padding: 0.5rem;
@@ -172,13 +226,12 @@ export default function Header({
         }
       `}</style>
 
-      <header className="sticky top-0 z-[100] w-full flex flex-col bg-black">
-   {/* Main bar */}
+      {/* ── Header bar ── */}
+      <header className="sticky top-0 z-[100] w-full bg-black">
         <div
-          className="relative bg-gradient-to-r from-black via-gray-900 to-black w-full bg-black border-b-2 border-red-600 flex items-center gap-2 sm:gap-4 px-3 sm:px-6"
+          className="relative bg-gradient-to-r from-black via-gray-900 to-black w-full border-b-2 border-red-600 flex items-center gap-2 sm:gap-4 px-3 "
           style={{ height: "3.75rem" }}
         >
-          {/* Logo */}
           <a
             href="/"
             aria-label="Accueil Just Cool - Restaurant Halal Nice"
@@ -202,28 +255,16 @@ export default function Header({
             />
           </a>
 
-
-          {/* Right side */}
           <div className="ml-auto flex items-center gap-3 sm:gap-5">
-            {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-6">
-              <a href="/#nav-categories" className="desktop-nav-link">
-                Notre Menu
-              </a>
-              <a href="/about" className="desktop-nav-link">
-                À propos de nous
-              </a>
+              <a href="/#nav-categories" className="desktop-nav-link">Notre Menu</a>
+              <a href="/about" className="desktop-nav-link">À propos de nous</a>
             </nav>
 
-            {/* Commander — desktop */}
-            <a
-              href="/#nav-categories"
-              className="commander-btn hidden md:inline-flex items-center"
-            >
+            <a href="/#nav-categories" className="commander-btn hidden md:inline-flex items-center">
               Commander
             </a>
 
-            {/* Cart */}
             <button
               aria-label={`Voir le panier (${cartCount} articles)`}
               className="cart-btn"
@@ -233,50 +274,112 @@ export default function Header({
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
             </button>
 
-            {/* Mobile menu toggle */}
             <button
-              aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              aria-label="Ouvrir le menu"
               aria-expanded={mobileOpen}
-              className="flex items-center justify-center w-11 h-11 rounded-lg bg-transparent border-none text-white cursor-pointer transition-colors duration-200 hover:bg-white/10 sm:hidden"
-              onClick={() => setMobileOpen((v) => !v)}
+              className="flex items-center justify-center w-11 h-11 rounded-lg bg-transparent border-none text-white cursor-pointer transition-colors duration-200 hover:bg-white/10 md:hidden"
+              onClick={() => setMobileOpen(true)}
             >
-              {mobileOpen ? <CloseIcon /> : <MenuIcon />}
+              <MenuIcon />
             </button>
           </div>
         </div>
-
-        {/* Mobile drawer */}
-        <div
-          className={`mobile-drawer md:hidden bg-black ${mobileOpen ? "open" : ""}`}
-          aria-hidden={!mobileOpen}
-        >
-          <a
-            href="/#nav-categories"
-            className="mobile-nav-link"
-            onClick={() => setMobileOpen(false)}
-          >
-            Notre Menu
-            <span className="arrow">›</span>
-          </a>
-          <a
-            href="/about"
-            className="mobile-nav-link"
-            onClick={() => setMobileOpen(false)}
-          >
-            À propos de nous
-            <span className="arrow">›</span>
-          </a>
-          <div className="px-4 py-4">
-            <a
-              href="/#nav-categories"
-              className="commander-btn flex items-center justify-center w-full text-center"
-              onClick={() => setMobileOpen(false)}
-            >
-              Commander
-            </a>
-          </div>
-        </div>
       </header>
+
+      {/* ── Overlay ── */}
+      <div
+        className={`sheet-overlay ${mobileOpen ? "open" : ""}`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
+
+      {/* ── Right Sheet Panel ── */}
+      <div
+        className={`sheet-panel md:hidden ${mobileOpen ? "open" : ""}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation principale"
+      >
+        {/* Accessible title (screen-reader only) */}
+        <div className="sr-only">
+          <h2>Navigation principale</h2>
+          <p>Accès aux différentes sections du menu Just Cool.</p>
+        </div>
+
+        {/* Header row — logo + close btn */}
+        <div className="sheet-header-row">
+          <a
+            href="/"
+            className="flex items-center gap-2 sm:gap-4 focus-visible:outline-none focus-visible:ring-2 rounded-md"
+            onClick={() => setMobileOpen(false)}
+          >
+            <img
+              src="https://justcool.fr/assets/images/logo_just-cool_no-bg.svg"
+              alt="Logo"
+              style={{ height: "3.75rem", width: "3.75rem" }}
+              className="object-contain"
+            />
+            <div className="flex items-center gap-2">
+              <p aria-hidden="true" className="font-bold text-white flex font-display text-3xl">
+                <span>JUST</span><span className="text-red-500 ml-1">COOL</span>
+              </p>
+              <img
+                src="https://justcool.fr/assets/images/badge-halal.svg"
+                alt="Halal Certifié"
+                style={{ height: "2rem", width: "2rem" }}
+              />
+            </div>
+          </a>
+
+          {/* Close button — absolute top-right */}
+          <button
+            className="sheet-close-btn"
+            onClick={() => setMobileOpen(false)}
+            aria-label="Fermer"
+          >
+            <CloseIcon />
+            <span className="sr-only">Close</span>
+          </button>
+        </div>
+
+        {/* Body — nav + CTA */}
+        <div className="sheet-body">
+          <nav aria-label="Navigation mobile">
+            <ul className="flex flex-col items-center gap-6 w-full p-0 m-0 list-none">
+              <li className="w-full text-center">
+                <a
+                  href="/#nav-categories"
+                  className="sheet-nav-link"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Notre Menu
+                </a>
+              </li>
+              <li className="w-full text-center">
+                <a
+                  href="/a-propos"
+                  className="sheet-nav-link"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  À propos de nous
+                </a>
+              </li>
+              <li className="flex justify-center w-full">
+                <div style={{ width: "6rem", height: "1px", background: "rgba(255,255,255,0.1)" }} />
+              </li>
+              <li className="w-full text-center">
+                <a
+                  href="/#nav-categories"
+                  className="sheet-commander-btn"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  COMMANDER
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
     </>
   );
 }

@@ -1,6 +1,95 @@
 @import "tailwindcss";
-@import url("https://fonts.cdnfonts.com/css/framer-sans");
-@import url("https://fonts.cdnfonts.com/css/zamenhof");
+
+@font-face {
+  font-family: "Zamenhof Inverse";
+  src: url("/fonts/Zamenhof Inverse.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Framer Sans";
+  src: url("/fonts/FramerSans100.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Framer Sans";
+  src: url("/fonts/FramerSans200.ttf") format("truetype");
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Framer Sans";
+  src: url("/fonts/FramerSans300.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Framer Sans";
+  src: url("/fonts/FramerSans400.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Framer Sans";
+  src: url("/fonts/FramerSans500.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Framer Sans";
+  src: url("/fonts/FramerSans600.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Framer Sans";
+  src: url("/fonts/FramerSans700.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/fonts/LucidaHandwritingStdThin.TTF") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/fonts/LucidaHandwritingStdLight.TTF") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/fonts/LucidaHandwritingStdRg.TTF") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/fonts/LucidaHandwritingStdBold.TTF") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Lucida Handwriting";
+  src: url("/fonts/LucidaHandwritingStdBlack.TTF") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
 
 :root {
   --font-framer-sans: "Framer Sans", sans-serif;

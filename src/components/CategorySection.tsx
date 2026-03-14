@@ -99,7 +99,7 @@ function ProductCard({
     >
       {/* Image */}
       <div
-        className="relative w-full aspect-[4/3] shrink-0 overflow-hidden rounded-t-xl bg-gray-900"
+        className="relative w-full aspect-[4/3] shrink-0 overflow-hidden rounded-t-xl"
         aria-hidden="true"
       >
         <img

@@ -34,6 +34,7 @@ interface OrderOptions {
   supplements: string[];
   groupSelections: Record<string, string[]>;
   supplementSurcharge: number;
+  selectedBoisson?: string;
 }
 
 interface ProductModalProps {
@@ -82,15 +83,6 @@ function Separator() {
   return <div className="h-px w-full bg-white/10" />;
 }
 
-function ErrorBanner({ message }: { message: string }) {
-  return (
-    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/15 border border-red-500/40 text-red-400 text-xs font-bold animate-[shake_0.35s_ease]">
-      <AlertIcon />
-      {message}
-    </div>
-  );
-}
-
 function OptionChip({
   label, selected, onClick, disabled, hasError,
 }: {
@@ -116,10 +108,10 @@ function OptionChip({
 }
 
 function ImageOption({
-  label, imageSrc, selected, onClick, disabled, price, hasError,
+  label, imageSrc, selected, onClick, disabled, price, hasError, isSpicy,
 }: {
   label: string; imageSrc: string; selected: boolean; onClick: () => void;
-  disabled?: boolean; price?: number; hasError?: boolean;
+  disabled?: boolean; price?: number; hasError?: boolean; isSpicy?: boolean;
 }) {
   return (
     <button
@@ -141,45 +133,230 @@ function ImageOption({
           className="absolute inset-0 w-full h-full object-contain p-2" />
       </div>
       <div className="flex flex-col items-start gap-0.5 min-w-0 flex-1">
-        <span className="text-xs text-white leading-tight truncate">{label}</span>
+        <span className="text-xs text-white leading-tight truncate flex gap-2" >{label}   {isSpicy && <FlameIcon />}</span>
+         
         {price !== undefined && price > 0 && (
           <span className="text-white/50 text-xs font-bold">+{price.toFixed(2)}€</span>
         )}
       </div>
-
     </button>
   );
 }
 
 // ─── Spicy-name detection ─────────────────────────────────────────────────────
 
-const SPICY_KEYWORDS = ["harissa", "samourai", "algérienne", "algerienne", "chili", "piment", "sriracha", "marocaine"];
+// "spicy" in the API name is the explicit tag — show flame icon, strip from display
 function isSpicyName(name: string) {
-  const lower = name.toLowerCase();
-  return SPICY_KEYWORDS.some((k) => lower.includes(k));
+  console.log(name);
+  
+  return name.toLowerCase().includes("spicy");
 }
 
-// ─── Default selections helper ────────────────────────────────────────────────
-// Returns a map of groupId → default selected IDs for a given set of groups.
+// Strip the hidden "spicy" tag so it never appears in the UI
+function cleanDisplayName(name: string) {
+  return name.replace(/\s*spicy\s*/gi, "").trim();
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function isBoissonGroup(group: ApiSupplementGroup) {
+  return group.name.toLowerCase().includes("boisson");
+}
 
 function buildDefaultSelections(groups: ApiSupplementGroup[]): Record<string, string[]> {
   const defaults: Record<string, string[]> = {};
-
   groups.forEach((g) => {
-    // "Choisissez votre pain" → pre-select "Pain Naan" if present
     if (g.name === "Choisissez votre pain") {
       const naan = g.supplements.find(
         (s) => s.is_active && s.name.trim().toLowerCase() === "pain naan"
       );
-      if (naan) {
-        defaults[g.id] = [naan.id];
-      }
+      if (naan) defaults[g.id] = [naan.id];
     }
-    // "Choisissez vos crudités" → start empty (no default, avoids validation error)
-    // Nothing to do — absence of key = empty selection
   });
-
   return defaults;
+}
+
+// ─── FormuleMenuSection ───────────────────────────────────────────────────────
+
+const FORMULE_PRICE = 2.00;
+const STUDENT_DISCOUNT = 1.00;
+
+interface FormuleMenuSectionProps {
+  menuFormule: boolean;
+  isStudent: boolean;
+  selectedBoisson: string | null;
+  boissonError: boolean;
+  onToggleFormule: (v: boolean) => void;
+  onToggleStudent: (v: boolean) => void;
+  onSelectBoisson: (supId: string) => void;
+}
+
+// ─── Hardcoded boisson list ───────────────────────────────────────────────────
+// extra: number > 0 means a surcharge on top of the formule price
+// displayPrice: the retail price shown struck-through (included in formule)
+
+const HARDCODED_BOISSONS: { id: string; name: string; extra: number; displayPrice: string }[] = [
+  { id: "cristaline",             name: "Cristaline",             extra: 0,    displayPrice: "1.50€" },
+  { id: "perrier",                name: "Perrier",                extra: 0,    displayPrice: "2.00€" },
+  { id: "coca-cola-cherry",       name: "Coca-Cola Cherry",       extra: 0,    displayPrice: "2.00€" },
+  { id: "coca-cola",              name: "Coca-Cola",              extra: 0,    displayPrice: "2.00€" },
+  { id: "coca-cola-zero",         name: "Coca-Cola Zero",         extra: 0,    displayPrice: "2.00€" },
+  { id: "tropico",                name: "Tropico",                extra: 0,    displayPrice: "2.00€" },
+  { id: "ice-tea",                name: "Ice Tea",                extra: 0,    displayPrice: "2.00€" },
+  { id: "oasis-tropicale",        name: "Oasis tropicale",        extra: 0,    displayPrice: "2.00€" },
+  { id: "oasis-fraise-framboise", name: "Oasis fraise framboise", extra: 0,    displayPrice: "2.00€" },
+  { id: "oasis-pomme-cassis",     name: "Oasis pomme cassis",     extra: 0,    displayPrice: "2.00€" },
+  { id: "oasis-pomme-poire",      name: "Oasis pomme poire",      extra: 0,    displayPrice: "2.00€" },
+  { id: "sprite",                 name: "Sprite",                 extra: 0,    displayPrice: "2.00€" },
+  { id: "fanta-orange",           name: "Fanta orange",           extra: 0,    displayPrice: "2.00€" },
+  { id: "fanta-citron",           name: "Fanta citron",           extra: 0,    displayPrice: "2.00€" },
+  { id: "schweppes-pomme",        name: "Schweppes pomme",        extra: 0,    displayPrice: "2.00€" },
+  { id: "schweppes-agrumes",      name: "Schweppes Agrumes",      extra: 0,    displayPrice: "2.00€" },
+  { id: "seven-up",               name: "Seven Up",               extra: 0,    displayPrice: "2.00€" },
+  { id: "seven-up-moj",           name: "Seven Up Moj.",          extra: 0,    displayPrice: "2.00€" },
+  { id: "orangina",               name: "Orangina",               extra: 0,    displayPrice: "2.00€" },
+  { id: "fuze-tea",               name: "Fuze Tea",               extra: 0,    displayPrice: "2.00€" },
+  { id: "coca-cola-1l",           name: "Coca-Cola 1 litre",      extra: 1.50, displayPrice: ""      },
+  { id: "capri-sun",              name: "Capri-Sun",              extra: 0,    displayPrice: "1.50€" },
+];
+
+function FormuleMenuSection({
+  menuFormule,
+  isStudent,
+  selectedBoisson,
+  boissonError,
+  onToggleFormule,
+  onToggleStudent,
+  onSelectBoisson,
+}: FormuleMenuSectionProps) {
+  return (
+    <div className="space-y-0">
+      {/* ── Formule toggle row ── */}
+      <div
+        className="flex items-center justify-between cursor-pointer select-none group py-1"
+        onClick={() => onToggleFormule(!menuFormule)}
+        role="checkbox"
+        aria-checked={menuFormule}
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") onToggleFormule(!menuFormule); }}
+      >
+        <span className="font-sans font-bold uppercase tracking-widest text-sm text-white group-hover:text-white/80 transition-colors">
+          Ajoutez la formule menu (frites + boisson)
+        </span>
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="font-black text-[#DC2626] font-sans text-sm">+{FORMULE_PRICE.toFixed(2)}€</span>
+          <span
+            className={`w-5 h-5 rounded flex items-center justify-center border-2 transition-all duration-200 shrink-0
+              ${menuFormule
+                ? "bg-[#DC2626] border-[#DC2626] shadow-[0_0_10px_rgba(220,38,38,0.4)]"
+                : "bg-transparent border-white/40 group-hover:border-white/70"
+              }`}
+          >
+            {menuFormule && <CheckIcon />}
+          </span>
+        </div>
+      </div>
+
+      {/* ── Student discount + boisson picker (visible only when formule is ON) ── */}
+      <div
+        style={{
+          maxHeight: menuFormule ? "2000px" : "0px",
+          opacity: menuFormule ? 1 : 0,
+          overflow: "hidden",
+          transition: "max-height 0.45s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease",
+        }}
+      >
+        <div className="pt-3 space-y-4">
+          {/* Student discount row */}
+          <div>
+            <div
+              className="flex items-center justify-between cursor-pointer select-none group py-1"
+              onClick={() => onToggleStudent(!isStudent)}
+              role="checkbox"
+              aria-checked={isStudent}
+              tabIndex={menuFormule ? 0 : -1}
+              onKeyDown={(e) => { if (e.key === " " || e.key === "Enter") onToggleStudent(!isStudent); }}
+            >
+              <div className="flex items-center gap-2">
+                <span className="font-sans font-black uppercase tracking-widest text-white/70 text-xs">
+                  Offre spéciale étudiant
+                </span>
+                <span className="inline-flex items-center px-2 py-0.5 rounded border text-xs uppercase tracking-wider h-5 font-bold border-green-500/50 bg-green-500/20 text-green-500">
+                  -{STUDENT_DISCOUNT.toFixed(0)}€ sur le menu
+                </span>
+              </div>
+              <span
+                className={`w-4 h-4 rounded flex items-center justify-center border-2 transition-all duration-200 shrink-0 ml-3
+                  ${isStudent
+                    ? "bg-green-500 border-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"
+                    : "bg-transparent border-green-500/50 hover:border-green-500"
+                  }`}
+              >
+                {isStudent && (
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                )}
+              </span>
+            </div>
+            {isStudent && (
+              <p className="text-green-500/80 italic text-xs mt-1 pl-1">
+                * Présentez votre carte étudiante en caisse pour bénéficier de la réduction.
+              </p>
+            )}
+          </div>
+
+          <div className="h-px w-full bg-white/10" />
+
+          {/* Boisson picker — hardcoded list */}
+          <fieldset
+            id="section-boisson"
+            className={`section-box ${boissonError ? "section-error" : ""}`}
+          >
+            <div className="section-legend">
+              <span className={`font-bold uppercase tracking-widest text-sm ${boissonError ? "text-red-400" : "text-white"}`}>
+                Choisissez votre boisson
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 border-red-500/80 bg-red-500/10 text-red-400">
+                Obligatoire
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-1">
+              {HARDCODED_BOISSONS.map((b) => {
+                const isSelected = selectedBoisson === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    onClick={() => onSelectBoisson(b.id)}
+                    className={`whitespace-nowrap border backdrop-blur-xl h-8 rounded-full font-bold transition-all text-xs py-2.5 px-3 flex items-center justify-between gap-1
+                      ${isSelected
+                        ? "bg-gradient-to-r from-red-600 to-red-700 border-red-600 text-white shadow-[0_0_15px_rgba(204,30,39,0.4)]"
+                        : boissonError
+                          ? "error-pulse-chip bg-white/5 border-red-500/40 text-red-300/70 hover:bg-white/10 hover:text-white hover:border-white/40"
+                          : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/40"
+                      }`}
+                  >
+                    <span className="truncate">{b.name}</span>
+                    {b.extra > 0 ? (
+                      <span className={`font-black font-sans text-xs ml-1 shrink-0 ${isSelected ? "text-white" : "text-[#DC2626]"}`}>
+                        +{b.extra.toFixed(2)}€
+                      </span>
+                    ) : b.displayPrice ? (
+                      <span className={`font-black font-sans text-xs ml-1 shrink-0 line-through ${isSelected ? "text-white/50" : "text-white/30"}`}>
+                        {b.displayPrice}
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ─── CruditesGroupSection ─────────────────────────────────────────────────────
@@ -198,7 +375,6 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
   const STATIC_ITEMS = ["Salade", "Tomate", "Oignon"];
 
   const realSelected = selected.filter((id) => id !== NATURE_SENTINEL);
-  // Nature is only active when explicitly chosen (sentinel present), NOT by default
   const isNatureSelected = selected.includes(NATURE_SENTINEL);
   const isCompletSelected = STATIC_ITEMS.every((label) => realSelected.includes(label));
 
@@ -207,20 +383,14 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
 
   const toggleIndividual = (label: string) => {
     if (realSelected.includes(label)) {
-      const next = realSelected.filter((id) => id !== label);
-      // If nothing left, go back to empty (not Nature) so user must re-choose
-      onChange(group.id, next);
+      onChange(group.id, realSelected.filter((id) => id !== label));
     } else {
       onChange(group.id, [...realSelected, label]);
     }
   };
 
   return (
-    <fieldset
-      id={sectionId}
-      className={`section-box ${hasError ? "section-error" : ""}`}
-    >
-      {/* Header */}
+    <fieldset id={sectionId} className={`section-box ${hasError ? "section-error" : ""}`}>
       <div className="section-legend">
         <span className={`font-bold uppercase tracking-widest text-sm transition-colors ${hasError ? "text-red-400" : "text-white"}`}>
           {group.name}
@@ -239,26 +409,15 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
         )}
       </div>
 
-      {/* Quick selection label */}
       <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.15em] mb-2">
         Sélection rapide
       </p>
 
-      {/* NATURE / COMPLET preset cards */}
       <div className="grid grid-cols-2 gap-2 mb-4">
-        {/* NATURE card */}
-        <button
-          type="button"
-          onClick={handleNature}
+        <button type="button" onClick={handleNature}
           className={`relative flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border transition-all duration-200
-            ${isNatureSelected
-              ? "border-[#DC2626] bg-[#DC2626]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]"
-              : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"
-            }`}
-        >
-          <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isNatureSelected ? "text-white" : "text-white/60"}`}>
-            Nature
-          </span>
+            ${isNatureSelected ? "border-[#DC2626] bg-[#DC2626]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]" : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"}`}>
+          <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isNatureSelected ? "text-white" : "text-white/60"}`}>Nature</span>
           <span className="relative text-2xl leading-none select-none inline-block">
             🥬🍅🧅
             <span className="pointer-events-none absolute left-0 right-0 top-1/2 h-[2px] -translate-y-1/2 -rotate-[18deg] bg-white/70" />
@@ -271,19 +430,10 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
           )}
         </button>
 
-        {/* COMPLET card */}
-        <button
-          type="button"
-          onClick={handleComplet}
+        <button type="button" onClick={handleComplet}
           className={`relative flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-xl border transition-all duration-200
-            ${isCompletSelected
-              ? "border-[#DC2626] bg-[#DC2626]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]"
-              : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"
-            }`}
-        >
-          <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isCompletSelected ? "text-white" : "text-white/60"}`}>
-            Complet
-          </span>
+            ${isCompletSelected ? "border-[#DC2626] bg-[#DC2626]/15 shadow-[0_0_14px_rgba(228,88,53,0.25)]" : "border-white/15 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/30"}`}>
+          <span className={`text-[11px] font-extrabold uppercase tracking-widest ${isCompletSelected ? "text-white" : "text-white/60"}`}>Complet</span>
           <span className="text-2xl leading-none select-none">🥬🍅🧅</span>
           <span className="text-[10px] text-white/35 italic">toutes les crudités</span>
           {isCompletSelected && (
@@ -294,7 +444,6 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
         </button>
       </div>
 
-      {/* Static individual chips: Salade, Tomate, Oignon */}
       <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.15em] mb-3">
         Ou sélection individuelle
       </p>
@@ -302,21 +451,12 @@ function CruditesGroupSection({ group, selected, hasError, onChange }: CruditesG
         {(["Salade", "Tomate", "Oignon"] as const).map((label) => {
           const isSelected = realSelected.includes(label);
           return (
-            <button
-              key={label}
-              type="button"
-              onClick={() => toggleIndividual(label)}
-              className="flex items-center gap-2 group"
-            >
+            <button key={label} type="button" onClick={() => toggleIndividual(label)} className="flex items-center gap-2 group">
               <span className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition-all duration-150 border-2
-                ${isSelected
-                  ? "bg-[#DC2626] border-[#DC2626] shadow-[0_0_10px_rgba(228,88,53,0.5)]"
-                  : "bg-transparent border-white/35 group-hover:border-white/60"
-                }`}>
+                ${isSelected ? "bg-[#DC2626] border-[#DC2626] shadow-[0_0_10px_rgba(228,88,53,0.5)]" : "bg-transparent border-white/35 group-hover:border-white/60"}`}>
                 {isSelected && <CheckIcon />}
               </span>
-              <span className={`text-sm font-bold uppercase tracking-widest transition-colors
-                ${isSelected ? "text-white" : "text-white/60 group-hover:text-white/90"}`}>
+              <span className={`text-sm font-bold uppercase tracking-widest transition-colors ${isSelected ? "text-white" : "text-white/60 group-hover:text-white/90"}`}>
                 {label}
               </span>
             </button>
@@ -338,22 +478,13 @@ interface GroupSectionProps {
 
 function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps) {
   if (group.name === "Choisissez vos crudités") {
-    return (
-      <CruditesGroupSection
-        group={group}
-        selected={selected}
-        hasError={hasError}
-        onChange={onChange}
-      />
-    );
+    return <CruditesGroupSection group={group} selected={selected} hasError={hasError} onChange={onChange} />;
   }
-  if (group.name === "Ou sélection individuelle") {
-    return null;
-  }
+  if (group.name === "Ou sélection individuelle") return null;
 
-  const isRadio  = group.max_selection === 1;
-  const isMulti  = group.max_selection > 1;
-  const atMax    = isMulti && selected.length >= group.max_selection;
+  const isRadio = group.max_selection === 1;
+  const isMulti = group.max_selection > 1;
+  const atMax = isMulti && selected.length >= group.max_selection;
   const sectionId = `section-group-${group.id}`;
 
   const toggle = (supId: string) => {
@@ -369,62 +500,61 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
     }
   };
 
-  const activeSupplements = group.supplements
-    .filter((s) => s.is_active)
-    .sort((a, b) => a.sort_order - b.sort_order);
-
+  const activeSupplements = group.supplements.filter((s) => s.is_active).sort((a, b) => a.sort_order - b.sort_order);
   const hasImages = activeSupplements.some((s) => s.image_url);
 
   return (
-    <fieldset
-      id={sectionId}
-      className={`section-box ${hasError ? "section-error" : ""}`}
-    >
+    <fieldset id={sectionId} className={`section-box ${hasError ? "section-error" : ""}`}>
       <div className="section-legend">
         <span className={`font-bold uppercase tracking-widest text-sm transition-colors ${hasError ? "text-red-400" : "text-white"}`}>
           {group.name}
         </span>
-
         {isMulti && (
           <span className="text-xs px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">
             MAX {group.max_selection}
           </span>
         )}
-
         {group.is_required ? (
           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 ${hasError ? "border-red-500/80 bg-red-500/10 text-red-400" : "border-red-500/80 bg-red-500/10 text-red-400"}`}>
             Obligatoire
           </span>
         ) : (
-          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5
-            border-white/20 bg-white/5 text-white/40">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs uppercase tracking-wider border h-5 border-white/20 bg-white/5 text-white/40">
             Optionnel
           </span>
         )}
-
-        {group.description && (
-          <span className="text-white/35 text-xs italic">{group.description}</span>
-        )}
+        {group.description && <span className="text-white/35 text-xs italic">{group.description}</span>}
       </div>
 
       {hasImages ? (
         <div className="grid grid-cols-2 gap-1.5">
-          {activeSupplements.map((sup) => (
+          {activeSupplements.map((sup) => {
+            console.log(sup.name);
+                      const isSauceGroup = group.name.toLowerCase().includes("sauce");
+            const displayLabel = isSauceGroup ? cleanDisplayName(sup.name) : sup.name.trim();
+            return(
+            
             <ImageOption
               key={sup.id}
-              label={sup.name.trim()}
+              label={displayLabel}
               imageSrc={sup.image_url!}
               selected={selected.includes(sup.id)}
               price={sup.price > 0 ? sup.price : undefined}
               disabled={atMax && !selected.includes(sup.id)}
               hasError={hasError && !selected.includes(sup.id)}
               onClick={() => toggle(sup.id)}
+              isSpicy={isSauceGroup && isSpicyName(sup.name)}
             />
-          ))}
+          )
+          })}
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {activeSupplements.map((sup) => (
+          {activeSupplements.map((sup) => {
+        
+            
+  
+            return (
             <div key={sup.id} className="flex items-center gap-1">
               <OptionChip
                 label={sup.name.trim()}
@@ -433,14 +563,15 @@ function GroupSection({ group, selected, hasError, onChange }: GroupSectionProps
                 hasError={hasError && !selected.includes(sup.id)}
                 onClick={() => toggle(sup.id)}
               />
-              {isSpicyName(sup.name) && <FlameIcon />}
+           
               {sup.price > 0 && (
                 <span className="text-xs font-semibold" style={{ color: "#DC2626" }}>
                   +{sup.price.toFixed(2)}€
                 </span>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </fieldset>
@@ -454,38 +585,54 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
   const [groupSelections, setGroupSelections] = useState<Record<string, string[]>>({});
   const [errors, setErrors] = useState<Set<string>>(new Set());
 
+  // ── Formule Menu state ────────────────────────────────────────────────────
+  const [menuFormule, setMenuFormule] = useState(false);
+  const [isStudent, setIsStudent] = useState(false);
+  const [selectedBoisson, setSelectedBoisson] = useState<string | null>(null);
+  const [boissonError, setBoissonError] = useState(false);
+
   const scrollRef      = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
-  const supplementGroups: ApiSupplementGroup[] =
-    (product as any)?.supplementGroups ?? [];
+  const supplementGroups: ApiSupplementGroup[] = (product as any)?.supplementGroups ?? [];
 
-  // ── Reset when product changes — apply smart defaults ─────────────────────
+  // Non-boisson groups for the normal section (filter out any API boisson group)
+  const nonBoissonGroups = supplementGroups.filter((g) => !isBoissonGroup(g));
+
+  // ── Reset when product changes ────────────────────────────────────────────
   useEffect(() => {
     if (product) {
       setQuantity(1);
       setErrors(new Set());
-      setGroupSelections(buildDefaultSelections(supplementGroups));
+      setMenuFormule(false);
+      setIsStudent(false);
+      setSelectedBoisson(null);
+      setBoissonError(false);
+      setGroupSelections(buildDefaultSelections(nonBoissonGroups));
       setTimeout(() => { scrollRef.current?.scrollTo({ top: 0 }); }, 50);
     }
   }, [product]);
 
-  // ── Auto-clear errors when groups become valid ────────────────────────────
+  // ── Clear boisson error when selection made ───────────────────────────────
+  useEffect(() => {
+    if (selectedBoisson) setBoissonError(false);
+  }, [selectedBoisson]);
+
+  // ── Auto-clear group errors when valid ────────────────────────────────────
   useEffect(() => {
     setErrors((prev) => {
       if (prev.size === 0) return prev;
       const next = new Set(prev);
-      supplementGroups.forEach((g) => {
+      nonBoissonGroups.forEach((g) => {
         if (!g.is_required) return;
         const sel = groupSelections[g.id] ?? [];
-        // NATURE sentinel or non-empty selection both count as valid
         if (sel.includes("__nature__") || sel.length >= Math.max(1, g.min_selection)) {
           next.delete(g.id);
         }
       });
       return next;
     });
-  }, [groupSelections, supplementGroups]);
+  }, [groupSelections, nonBoissonGroups]);
 
   // ── Keyboard dismiss + scroll lock ───────────────────────────────────────
   useEffect(() => {
@@ -504,10 +651,10 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
     setGroupSelections((prev) => ({ ...prev, [groupId]: newSelected }));
   }, []);
 
-  // ── Per-unit supplement surcharge ─────────────────────────────────────────
+  // ── Supplement surcharge (non-boisson groups only) ────────────────────────
   const supplementSurcharge = (() => {
     let extra = 0;
-    supplementGroups.forEach((g) => {
+    nonBoissonGroups.forEach((g) => {
       (groupSelections[g.id] ?? []).filter((id) => id !== "__nature__").forEach((supId) => {
         const sup = g.supplements.find((s) => s.id === supId);
         if (sup) extra += sup.price;
@@ -516,24 +663,50 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
     return extra;
   })();
 
-  const totalPrice = product ? (product.price + supplementSurcharge) * quantity : 0;
+  // ── Boisson surcharge (extra cost above base formule price) ───────────────
+  const boissonSurcharge = (() => {
+    if (!menuFormule || !selectedBoisson) return 0;
+    const b = HARDCODED_BOISSONS.find((b) => b.id === selectedBoisson);
+    return b ? b.extra : 0;
+  })();
 
-  // ── Validation + scroll-to-error ──────────────────────────────────────────
+  // ── Formule net price (base +2€, -1€ if student, +boisson surcharge) ─────
+  const formuleSurcharge = menuFormule
+    ? FORMULE_PRICE - (isStudent ? STUDENT_DISCOUNT : 0) + boissonSurcharge
+    : 0;
+
+  const totalPrice = product ? (product.price + supplementSurcharge + formuleSurcharge) * quantity : 0;
+
+  // ── Validation ────────────────────────────────────────────────────────────
   const handleAdd = () => {
     if (!product) return;
 
-    const failedGroups = supplementGroups.filter((g) => {
+    // Validate non-boisson required groups
+    const failedGroups = nonBoissonGroups.filter((g) => {
       if (!g.is_required) return false;
       const sel = groupSelections[g.id] ?? [];
-      // NATURE sentinel = valid "none" selection for crudités
       if (sel.includes("__nature__")) return false;
       return sel.length < Math.max(1, g.min_selection);
     });
 
-    if (failedGroups.length > 0) {
+    // Validate boisson if formule is active
+    let hasBoissonError = false;
+    if (menuFormule && !selectedBoisson) {
+      hasBoissonError = true;
+    }
+
+    if (failedGroups.length > 0 || hasBoissonError) {
       setErrors(new Set(failedGroups.map((g) => g.id)));
-      const firstId = `section-group-${failedGroups[0].id}`;
-      const firstEl = scrollRef.current?.querySelector(`#${firstId}`);
+      setBoissonError(hasBoissonError);
+
+      // Scroll to first error
+      let firstEl: Element | null = null;
+      if (hasBoissonError) {
+        firstEl = scrollRef.current?.querySelector("#section-boisson") ?? null;
+      }
+      if (!firstEl && failedGroups.length > 0) {
+        firstEl = scrollRef.current?.querySelector(`#section-group-${failedGroups[0].id}`) ?? null;
+      }
       if (firstEl && scrollRef.current) {
         scrollRef.current.scrollTo({
           top: (firstEl as HTMLElement).offsetTop - 16,
@@ -543,10 +716,11 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
       return;
     }
 
+    // Build named selections
     const allSelectedNames: string[] = [];
     const namedGroupSelections: Record<string, string[]> = {};
 
-    supplementGroups.forEach((g) => {
+    nonBoissonGroups.forEach((g) => {
       const selectedIds = (groupSelections[g.id] ?? []).filter((id) => id !== "__nature__");
       const selectedNames = selectedIds.map((id) => {
         const sup = g.supplements.find((s) => s.id === id);
@@ -558,24 +732,36 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
       }
     });
 
+    // Add boisson to cart data if formule active
+    let selectedBoissonName: string | undefined;
+    if (menuFormule && selectedBoisson) {
+      const b = HARDCODED_BOISSONS.find((b) => b.id === selectedBoisson);
+      if (b) {
+        selectedBoissonName = b.name;
+        namedGroupSelections["Boisson (formule)"] = [selectedBoissonName];
+        allSelectedNames.push(selectedBoissonName);
+      }
+    }
+
     onAddToCart(product, quantity, {
       crudites: [],
       bread: "",
       sauces: [],
-      menuFormule: false,
-      isStudent: false,
+      menuFormule,
+      isStudent: menuFormule ? isStudent : false,
       supplements: allSelectedNames,
       groupSelections: namedGroupSelections,
-      supplementSurcharge,
+      supplementSurcharge: supplementSurcharge + formuleSurcharge,
+      selectedBoisson: selectedBoissonName,
     });
     onClose();
   };
 
   if (!isOpen || !product) return null;
 
-  const hasCrudites = supplementGroups.some((g) => g.name === "Choisissez vos crudités");
+  const hasCrudites = nonBoissonGroups.some((g) => g.name === "Choisissez vos crudités");
 
-  const visibleGroups = supplementGroups
+  const visibleGroups = nonBoissonGroups
     .filter((g) => g.supplements.some((s) => s.is_active))
     .sort((a, b) => a.sort_order - b.sort_order);
 
@@ -600,12 +786,8 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
           0%, 100% { background-color: rgba(220, 38, 38, 0); }
           50%       { background-color: rgba(220, 38, 38, 0.12); }
         }
-        .error-pulse-chip {
-          animation: pulse-red 1.4s ease-in-out infinite;
-        }
-        .error-pulse-img {
-          animation: pulse-red 1.4s ease-in-out infinite;
-        }
+        .error-pulse-chip { animation: pulse-red 1.4s ease-in-out infinite; }
+        .error-pulse-img  { animation: pulse-red 1.4s ease-in-out infinite; }
         .modal-animate { animation: modal-in 0.25s cubic-bezier(0.16,1,0.3,1) forwards; }
         .section-box {
           position: relative;
@@ -622,11 +804,9 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
           align-items: center;
           gap: 0.5rem;
           flex-wrap: wrap;
-          /* Pull up to sit on the top border */
           margin-top: -0.65rem;
           margin-bottom: 1rem;
           padding: 0 0.25rem;
-          /* Background matches modal bg so it "cuts" the border */
           background: #09090b;
           width: fit-content;
         }
@@ -646,8 +826,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
           style={{ maxHeight: "90dvh" }}
         >
           {/* ── Header ── */}
-          <div className="flex items-center justify-between px-4 py-3.5 shrink-0"
-            style={{ backgroundColor: "#DC2626" }}>
+          <div className="flex items-center justify-between px-4 py-3.5 shrink-0" style={{ backgroundColor: "#DC2626" }}>
             <h2 id="modal-title" className="text-white font-bold text-lg leading-tight pr-4">
               {product.name}
             </h2>
@@ -663,7 +842,7 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
 
           {/* ── Scrollable body ── */}
           <div ref={scrollRef} className="flex-1 overflow-y-auto modal-scrollbar overscroll-contain">
-            <div className="p-5 space-y-6">
+            <div className="p-5 space-y-6 bg-black">
 
               {product.imageSrc && (
                 <div className="relative w-full aspect-[4/3] overflow-hidden rounded-xl bg-black">
@@ -671,7 +850,6 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                     alt={product.name}
                     src={"https://resto.devsolve-agency.com:8443/" + product.imageSrc}
                     className="absolute inset-0 w-full h-full object-contain"
-                    style={{ background: "radial-gradient(circle farthest-side, #444 -80px, #111)" }}
                   />
                 </div>
               )}
@@ -724,6 +902,27 @@ export default function ProductModal({ product, isOpen, onClose, onAddToCart }: 
                   </div>
                 </>
               )}
+
+              {/* ── Formule Menu section — shown after all other groups ── */}
+              <>
+                <Separator />
+                <FormuleMenuSection
+                  menuFormule={menuFormule}
+                  isStudent={isStudent}
+                  selectedBoisson={selectedBoisson}
+                  boissonError={boissonError}
+                  onToggleFormule={(v) => {
+                    setMenuFormule(v);
+                    if (!v) {
+                      setIsStudent(false);
+                      setSelectedBoisson(null);
+                      setBoissonError(false);
+                    }
+                  }}
+                  onToggleStudent={setIsStudent}
+                  onSelectBoisson={setSelectedBoisson}
+                />
+              </>
 
               {visibleGroups.length === 0 && (
                 <p className="text-white/30 text-xs italic text-center py-4">

@@ -59,8 +59,8 @@ export default function Header({
           inset-block: 0;
           right: 0;
           height: 100%;
-          width: 70%;
-          max-width: 70%;
+          width: 100%;
+          max-width: 100%;
           z-index: 150;
           display: flex;
           flex-direction: column;
@@ -149,6 +149,7 @@ export default function Header({
           text-decoration: none;
           box-shadow: 0 0 30px rgba(220, 38, 38, 0.4);
           transition: all 0.3s;
+          font-family: 'framer-sans', sans-serif;
         }
         .sheet-commander-btn:hover {
           background: linear-gradient(to right, #ef4444, #dc2626);
@@ -264,7 +265,6 @@ export default function Header({
             <a href="/#nav-categories" className="commander-btn hidden md:inline-flex items-center">
               Commander
             </a>
-
             <button
               aria-label={`Voir le panier (${cartCount} articles)`}
               className="cart-btn"
@@ -368,13 +368,14 @@ export default function Header({
                 <div style={{ width: "6rem", height: "1px", background: "rgba(255,255,255,0.1)" }} />
               </li>
               <li className="w-full text-center">
-                <a
+                {/* <a
                   href="/#nav-categories"
                   className="sheet-commander-btn"
                   onClick={() => setMobileOpen(false)}
                 >
                   COMMANDER
-                </a>
+                </a> */}
+                <a   onClick={() => setMobileOpen(false)} className="w-full max-w-xs block mx-auto inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&amp;_svg]:pointer-events-none [&amp;_svg:not([class*='size-'])]:size-4 shrink-0 [&amp;_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring focus-visible:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border border-transparent bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-primary-foreground shadow-[0_0_20px_rgba(204,30,39,0.5)] hover:shadow-[0_0_30px_rgba(204,30,39,0.8)] transition-all duration-300 h-9 px-4 py-2 has-[&gt;svg]:px-3 w-full py-6 rounded-2xl text-2xl font-bold h-auto shadow-[0_0_30px_rgba(220,38,38,0.4)] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring" href="/#nav-categories">COMMANDER</a>
               </li>
             </ul>
           </nav>

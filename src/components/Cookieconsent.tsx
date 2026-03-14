@@ -123,7 +123,7 @@ export default function CookieConsent() {
     <>
       <style>{`
       .cookies{
-      font-family:'Framer Sans'
+      font-family:'framer-sans', sans-serif !important
       }
         @keyframes modal-in {
           from { opacity: 0; transform: translateY(14px) scale(0.97); }
@@ -158,16 +158,15 @@ export default function CookieConsent() {
         {modalOpen && (
           <div
             ref={modalRef}
-            className="cookie-modal fixed"
+            className="cookie-modal fixed w-[93vw] md:w-[20vw]"
             style={{
               bottom: "1.5rem",
               right: "1.5rem",
-              width: "93vw",
               background: "#141414",
               borderRadius: 22,
               padding: "28px 24px 24px",
               boxShadow: "0 24px 60px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.07)",
-              fontFamily: "'DM Sans', 'Geist', sans-serif",
+           
               overflow: "hidden",
             }}
           >

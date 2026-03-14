@@ -23,7 +23,7 @@ export default function Hero() {
         {/* Location badge */}
         <span
   className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#cc2222]/10 border border-[#cc2222]/20 text-[#cc2222] text-sm font-semibold"
-  style={{ fontFamily: "Framer Sans, sans-serif" }}
+  style={{ fontFamily: "framer-sans, sans-serif" }}
 >
   <span aria-hidden="true" className="text-xs">📍</span>
   2 Bd Riquier, Nice
@@ -33,7 +33,7 @@ export default function Hero() {
         <h1
   id="hero-title"
   className='font-bold text-white text-4xl md:text-[60px] leading-[65px] text-center'
-  style={{ fontFamily: '"Framer Sans", sans-serif' }}
+  style={{ fontFamily: '"framer-sans", sans-serif' }}
 >
   <span
   aria-hidden="true"
@@ -64,7 +64,7 @@ export default function Hero() {
         {/* Description */}
         <p
   className="text-white/60 text-base sm:text-lg md:text-xl leading-relaxed max-w-3xl mx-auto"
-  style={{ fontFamily: "Framer Sans, sans-serif" }}
+  style={{ fontFamily: "framer-sans, sans-serif" }}
 >
   Envie d'un fast-food qui a du goût ? Découvrez nos{" "}
   <span className="text-white font-bold">Naan Burgers faits maison</span>, cuits minute au{" "}
@@ -92,7 +92,7 @@ export default function Hero() {
     hover:bg-red-700
     shadow-[0_0_35px_rgba(204,34,34,0.55)]
   "
-  style={{ fontFamily: "Framer Sans, sans-serif" }}
+  style={{ fontFamily: "framer-sans, sans-serif" }}
 >
   <a href="/#nav-categories" className="...">
   COMMANDER MAINTENANT
